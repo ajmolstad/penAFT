@@ -1,0 +1,39 @@
+---
+title: "penAFT"
+author: "Aaron J. Molstad & Piotr Suder"
+date: "9/24/2020"
+output: html_document
+---
+
+## Elastic net penalty
+The elastic net penalized estimator we are programming solves
+$$ \arg\min_{\beta} \left\{ \frac{1}{n^{2-\gamma}}f(\beta) + n^\gamma \lambda \sum_{j=1}^p w_j \left(\alpha |\beta_j| + \frac{(1-\alpha)}{2}\beta_j^2 \right)\right\}$$
+The arguments needed for the function are 
+
+- tildelogY: the length $l$ version of logY with all relevant pairwise differences
+- X: the $n \times p$ design matrix 
+- D: the sparse $l \times n$ matrix of all relevant pairwise differences
+- rho: ADMM step size parameter
+- eta: same as before
+- tau: same as before
+- lambda: tuning parameter
+- alpha: balance parameter in $[0,1]$ based on penalty above
+- w: $p$ dimensional vector of weights 
+- Gamma: initial value of $\Gamma$
+- Beta: initial value of $\beta$
+- Theta: initial value of $\Theta$
+- n: sample size
+- l: l
+- max.iter: maximum number of allowed iterations
+- tol.abs: the absolute convergence tolernace  for ADMM
+- tol.rel: relative convergence tolerance for ADMM
+- gamma: balance parameter for effect of $n$
+- euc.tildelogY: the euclidean norm of tildelogY, which was used to compute the primal or dual epsilon. 
+
+The function would look like: 
+```{r, eval=FALSE}
+ADMM.ENrun <- function(tildelogY, X, D, rho = rho, eta = eta, tau = tau, 
+			lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta, 
+			Theta = Theta, n = n, l = l, 
+			max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY)
+```
