@@ -1,7 +1,5 @@
-ADMM.ENpath <- function(X.fit, logY, delta, lambda,alpha, w, tol.abs, tol.rel, gamma){
+ADMM.ENpath <- function(X.fit, logY, delta, lambda, alpha, w, tol.abs, tol.rel, gamma){
   
-
-
   	# -------------------------------------
 	# Objective function evaluator 
 	# -------------------------------------
