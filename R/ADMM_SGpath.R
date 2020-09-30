@@ -2,14 +2,14 @@
 # Function for computing the solution path using sparse group lasso penalty
 # -----------------------------------------------------------------------------
 ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho = 2, tau = 1.1, lambda.ratio = .1, alpha, w, v, groups, tol.abs, tol.rel, gamma) {
-  
-  
+
+
   # -------------------------------------
-  # Objective function evaluator 
+  # Objective function evaluator
   # -------------------------------------
-  
+
   eval.obj <- function(logY, XB, beta, delta, lambda, groups){
-    out <- 0 
+    out <- 0
     n <- dim(X)[1]
     E <- logY - XB
     for(i in which(delta==1)){
@@ -23,17 +23,17 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     }
     return(out/n^2 + lambda*pen)
   }
-  
+
   X <- X.fit; X.fit <- NULL
-  
+
   # ---------------------------------
   # Preliminaries
   # ---------------------------------
   n <- length(logY)
   p <- dim(X)[2]
-  
-  
-  
+
+
+
   gradient_g <- function(X, logY, Beta, delta) {
     n <- nrow(X)
     p <- ncol(X)
@@ -50,20 +50,20 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     }
     grad/n^2
   }
-  
+
   lambda.max <- 0
   temp.grad <- gradient_g(X, logY, rep(0, dim(X)[2]), delta)
   for(g in 1:length(unique(groups))){
     lambda.max <- max(lambda.max, sqrt(sum(temp.grad[groups==g]^2)))
   }
   #lambda.max <- max(apply(gradient_g(X, logY, rep(0, dim(X)[2]), delta), 1, function(x){sqrt(sum(x^2))}))
-  
+
   lambda.max <- lambda.max + 1e-6
   lambda.min <- lambda.ratio*lambda.max
   lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
-  
-  
-  
+
+
+
   # --------------------------------------------------------------------------------
   # Sorting indexes by their groups and determining "border indexes" of groups
   # --------------------------------------------------------------------------------
@@ -78,13 +78,13 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   counter.indexes <- 1
   for (i in 1:length(groups)) {
     if (current.group != groups[i]) {
-      border.indexes[counter.indexes] <- i 
+      border.indexes[counter.indexes] <- i
       counter.indexes <- counter.indexes + 1
       current.group <- groups[i]
     }
   }
   border.indexes[length(border.indexes)] <- p + 1
-  
+
   print(border.indexes)
   # --------------------------------
   # Get initial values
@@ -98,7 +98,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     }
   }
   l <- l - 1
-  
+
   Theta <- rep(0, l)
   counter <- 1
   for(j in 1:(n-1)){
@@ -109,7 +109,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
       }
     }
   }
-  
+
   Gamma  <- -sign(Theta)
   Beta <- rep(0, p)
   D <- matrix(0, nrow=l, ncol=n)
@@ -123,7 +123,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
       }
     }
   }
-  D <- Matrix(D, sparse=TRUE)
+
   tildelogY <- rep(0, l)
   counter <- 1
   for(j in 1:(n-1)){
@@ -134,8 +134,8 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
       }
     }
   }
-  
-  
+
+
   tildedelta <- matrix(0, nrow = l, ncol = 2)
   counter <- 1
   for(j in 1:(n-1)){
@@ -146,7 +146,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
       }
     }
   }
-  
+
   eta <- max(eigen(crossprod(crossprod(t(D), X)))$val)
   Xbeta <- crossprod(t(X), Beta)
   tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
@@ -154,13 +154,14 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   rho <- 1
   BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
   euc.tildelogY <- sqrt(sum(tildelogY^2))
-  
+
+  #D <- Matrix(D, sparse=TRUE)
   for(kk in 1:length(lambda)){
-    out <- ADMM.SGrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5, 
-                      lambda = lambda[kk], alpha = alpha, w = w, v = v, border.indexes = border.indexes, Gamma = Gamma, Beta = Beta, 
-                      Theta = Theta, 
-                      max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY)
-    
+    out <- ADMM.SGrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5,
+                      lambda = lambda[kk], alpha = alpha, w = w, v = v, border.indexes = border.indexes, Gamma = Gamma, Beta = Beta,
+                      Theta = Theta,
+                      max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY, G = groups[length(groups)])
+
     Beta.data <- data.frame(out$Beta, index.vec)
     names(Beta.data) <- c("Beta", "indeces")
     Beta.data.unsorted <- Beta.data[order(Beta.data$indeces),]
@@ -172,20 +173,20 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     cat("Through tp ", kk, "\n")
     print(max(Beta))
   }
-  
-  
+
+
   result <- list("beta" = BetaOut, "lambda" = lambda)
-  
+
 }
-  
-  
+
+
 
 
 # -------------------------------------------------
 #ibrary(MASS)
 #library(Matrix)
 genSurvData <- function(n, p, rho, scale=1, shape=1.5, cens.quant = 0.65){
-  
+
   # --------------------------------
   # Generate predictors + beta
   # --------------------------------
@@ -195,15 +196,15 @@ genSurvData <- function(n, p, rho, scale=1, shape=1.5, cens.quant = 0.65){
       SigmaX[j,k] <- rho^(abs(j-k))
     }
   }
-  
+
   X <- mvrnorm(n = n, mu = rep(0, p), SigmaX, tol = 1e-06, empirical = FALSE)
   beta <- sample(c(0,1),p, replace = TRUE, prob=c(.9, .1))/5
-  
+
   # ------------------------------------------------
   # Generate responses from Weibull AFT
   # ------------------------------------------------
   logY <- X%*%beta + rnorm(n, mean = 2, sd = 1)
-  
+
   # -------------------------------------
   # Generate censoring times
   # -------------------------------------
@@ -212,7 +213,7 @@ genSurvData <- function(n, p, rho, scale=1, shape=1.5, cens.quant = 0.65){
   # follow-up times and event indicators
   time <- pmin(exp(logY), exp(C))
   status <- 1*(logY <= C)
-  
+
   return(list(
     "beta" = beta,
     "time" = time,
@@ -221,30 +222,3 @@ genSurvData <- function(n, p, rho, scale=1, shape=1.5, cens.quant = 0.65){
     "X" = X
   ))
 }
-
-
-set.seed(10)
-#set.seed(1)
-p <- 500
-temp <- genSurvData(n = 100, p = p, rho = 0.0, scale=2.0, shape=1.5, cens.quant = .6)
-X <- temp$X
-logY <- log(temp$time)
-#logY <- logY - rep(1, dim(logY)[1])%*%t(colMeans(logY))
-X <- X - rep(1, dim(X)[1])%*%t(colMeans(X))
-delta <- temp$status
-betastar <- temp$beta
-lambda.ratio <- .5
-nlambda <- 50
-groups <- rep(1:20, each = dim(X)[2]/20)
-w <- rep(c(1,2,3), (p/3 + 3))[1:p]
-v <- rep(c(2,5), (groups[length(groups)] / 2) + 2)[1:groups[length(groups)]]
-
-out <- ADMM.SGpath(X.fit = X, logY = logY, delta = delta, nlambda = 10, max.iter = 500, alpha = 1, w = w, v = v, groups = groups, tol.abs = 1e-10, tol.rel = 1e-10, gamma = 0)
-
-
-max(out$beta)
-Beta_10 <- out$beta[,10]
-Beta_10[Beta_10 != 0]
-
-Beta_2 <- out$beta[,8]
-Beta_2[Beta_2 != 0]
