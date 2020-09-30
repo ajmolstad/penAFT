@@ -154,6 +154,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
   euc.tildelogY <- sqrt(sum(tildelogY^2))
 
+
   #D <- Matrix(D, sparse=TRUE)
   for(kk in 1:length(lambda)){
     out <- ADMM.SGrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5,
@@ -171,6 +172,11 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     rho <- out$rho
     iter.counter <- out$iter.counter
 
+    if (kk == 7) {
+      BetaHist <- out$BetaHist
+
+    }
+
     if(iter.counter == max.iter){
       warning("ADMM did not converge in max.iter iterations", "\n")
     }
@@ -179,7 +185,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   }
 
 
-  result <- list("beta" = BetaOut, "lambda" = lambda)
+  result <- list("beta" = BetaOut, "lambda" = lambda, "BetaHist" = BetaHist)
 
 }
 
