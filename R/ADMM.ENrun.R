@@ -27,14 +27,15 @@ ADMM.ENrun <- function(tildelogY, X, D, tildedelta, rho, eta, tau,
 		# -------------------------------------
 		# Beta update
 		# -------------------------------------
-		W <- (1/(eta))*crossprod(X, crossprod(D, tildelogY - Theta - Gamma/rho - tXB)) + Beta
-		Beta <- Matrix(pmax(abs(W[,1]) - ((n^gamma)*lambda*alpha*w)/(eta*rho), 0)*sign(W[,1]), sparse=TRUE)/(1 + ((n^gamma)*lambda*(1-alpha)*w)/(eta*rho))
-		tXB <- crossprod(t(D), crossprod(t(X), Beta))
-
+		#for(jj in 1:5){
+			W <- (1/(eta))*crossprod(X, crossprod(D, tildelogY - Theta - Gamma/rho - tXB)) + Beta
+			Beta <- Matrix(pmax(abs(W[,1]) - ((n^gamma)*lambda*alpha*w)/(eta*rho), 0)*sign(W[,1]), sparse=TRUE)/(1 + ((n^gamma)*lambda*(1-alpha)*w)/(eta*rho))
+			tXB <- crossprod(t(D), crossprod(t(X), Beta))
+		#}
 		# ----------------------------------
 		# Gamma
 		# ----------------------------------
-		Gamma <- Gamma + tau*rho*(Theta - tildelogY + tXB)
+		Gamma <- Gamma + 1.5*rho*(Theta - tildelogY + tXB)
 
 		if(lll%%floor(2*updateStep) == 0){
 

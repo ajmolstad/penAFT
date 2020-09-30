@@ -37,58 +37,35 @@ ADMM.ENpath <- function(X.fit, logY, delta, lambda, alpha, w, tol.abs, tol.rel, 
 	l <- l - 1
 
 	Theta <- rep(0, l)
+	D <- matrix(0, nrow=l, ncol=n)
+	tildelogY <- rep(0, l)
+	tildedelta <- matrix(0, nrow = l, ncol = 2)
 	counter <- 1
 	for(j in 1:(n-1)){
 		for(k in (j+1):n){
 			if(delta[j]!=0 | delta[k]!=0){
 				Theta[counter] <- logY[j] - logY[k]
-				counter <- counter + 1
-			}
-		}
-	}
-
-	Gamma  <- -sign(Theta)
-	Beta <- rep(0, p)
-	D <- matrix(0, nrow=l, ncol=n)
-	counter <- 1
-	for(j in 1:(n-1)){
-		for(k in (j+1):n){
-			if(delta[j]!=0 | delta[k]!=0){
 				D[counter, j] <- 1
 				D[counter, k] <- -1
-				counter <- counter + 1
-			}
-		}
-	}
-	D <- Matrix(D, sparse=TRUE)
-	tildelogY <- rep(0, l)
-	counter <- 1
-	for(j in 1:(n-1)){
-		for(k in (j+1):n){
-			if(delta[j]!=0 | delta[k]!=0){
 				tildelogY[counter] <- logY[j] - logY[k]
+				tildedelta[counter,] <- c(delta[j], delta[k])
 				counter <- counter + 1
 			}
 		}
 	}
 
-
-	tildedelta <- matrix(0, nrow = l, ncol = 2)
-	counter <- 1
-	for(j in 1:(n-1)){
-	  for(k in (j+1):n){
-	    if(delta[j]!=0 | delta[k]!=0){
-	      tildedelta[counter,] <- c(delta[j], delta[k])
-	      counter <- counter + 1
-	    }
-	  }
+	D <- Matrix(D, sparse=TRUE)
+	Gamma  <- -sign(Theta)
+	Beta <- rep(0, p)
+	if(n < 300){
+		eta <- max(eigen(crossprod(crossprod(t(D), X)))$val)  
+	} else {
+		eta <- n*max(svd(X)$d)^2
 	}
-
-	eta <- max(eigen(crossprod(crossprod(t(D), X)))$val)  
 	Xbeta <- crossprod(t(X), Beta)
 	tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
 	#eta <- eta/2
-	rho <- 1
+	rho <- 2
 	BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
 	euc.tildelogY <- sqrt(sum(tildelogY^2))
 

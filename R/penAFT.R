@@ -60,7 +60,7 @@ penAFT <- function(X, logY, delta,
   if(standardize){
     X.fit <- (X - tcrossprod(rep(1, n), colMeans(X)))/(tcrossprod(rep(1, n), apply(X, 1, sd)))
   }
-  if(!center& !standardize){
+  if(!center & !standardize){
     X.fit <- X
   }
 
@@ -100,7 +100,11 @@ penAFT <- function(X, logY, delta,
     }
     
     if (is.null(lambda)) {
-      lambda.max <- max(abs(gradG/w))/alpha
+      wTemp <- w
+      if(any(wTemp==0)){
+        wTemp[which(wTemp == 0)] <- Inf
+      }
+      lambda.max <- max(abs(gradG/wTemp))/alpha + 1e-6
       if (is.null(lambda.ratio.min)) {
         lambda.ratio.min <- 0.1
       }
