@@ -85,7 +85,6 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   }
   border.indexes[length(border.indexes)] <- p + 1
 
-  print(border.indexes)
   # --------------------------------
   # Get initial values
   # --------------------------------
@@ -170,8 +169,13 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     Gamma <- out$Gamma
     Theta <- out$Theta
     rho <- out$rho
+    iter.counter <- out$iter.counter
+
+    if(iter.counter == max.iter){
+      warning("ADMM did not converge in max.iter iterations", "\n")
+    }
     cat("Through tp ", kk, "\n")
-    print(max(Beta))
+
   }
 
 

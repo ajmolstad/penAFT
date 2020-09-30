@@ -103,12 +103,17 @@ ADMM.ENpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, alpha
     out <- ADMM.ENrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5,
                       lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta,
                       Theta = Theta,
-                      max.iter = 5000, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY)
+                      max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY)
     BetaOut[,kk] <- out$Beta
     Beta <- out$Beta
     Gamma <- out$Gamma
     Theta <- out$Theta
     rho <- out$rho
+    iter.counter <- out$iter.counter
+
+    if(iter.counter == max.iter){
+      warning("ADMM did not converge in max.iter iterations", "\n")
+    }
     cat("Through tp ", kk, "\n")
   }
 
