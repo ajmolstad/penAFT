@@ -58,9 +58,9 @@ double maximum(double num1, double num2, double num3) {
 
 
 // [[Rcpp::export]]
-List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda, 
-    double alpha, arma::vec w, arma::vec Gamma, arma::vec Beta, arma::vec Theta, int max_iter, double tol_abs, double tol_rel, double gamma,
-    double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, int n, int l, int p)
+List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
+    double alpha, arma::vec w, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
+    double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p)
 {
 
     int updateStep = 1;
@@ -72,6 +72,8 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
 
     arma::sp_mat DSp_t = DSp.t();
     arma::mat X_t = X.t();
+
+    arma::mat BetaHist(p, max_iter);
 
     for (unsigned int lll = 1; lll <= max_iter; lll++)
     {
@@ -88,55 +90,33 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
             Theta(m) = updateThetaEntry(temp(m), tildedelta(m,0), tildedelta(m,1), nrho);
         }
 
-
-        //Theta[inds1] <- temp[inds1] - tildedelta[inds1,2]/(nrho)
-        //Theta[inds2] <- temp[inds2] + tildedelta[inds2,1]/(nrho)
-
         // -------------------------------------
         // Beta update
         // -------------------------------------
 
-        //W <- (1/(eta))*crossprod(X, crossprod(D, tildelogY - Theta - Gamma/rho - tXB)) + Beta
+        for (unsigned int nn = 0; nn < 3; nn++)
+        {
+            double fact_alpha = pow(n, gamma) * lambda * alpha / (rho * eta);
+            double fact_1_alpha = pow(n, gamma) * lambda * (1 - alpha) / (rho * eta);
 
-        double fact_alpha = pow(n, gamma) * lambda * alpha / (rho * eta);
-        double fact_1_alpha = pow(n, gamma) * lambda * (1 - alpha) / (rho * eta);
-
-        arma::mat w_fact_alpha = fact_alpha * w;
-        arma::mat w_fact_1_alpha = (fact_1_alpha * w) + 1; //CHECK ADDING 1 !!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-        arma::sp_mat s0(X_t * (DSp_t * (tildelogY - Theta - ((1/rho) * Gamma) - tXB)));
+            arma::mat w_fact_alpha = fact_alpha * w;
+            arma::mat w_fact_1_alpha = (fact_1_alpha * w) + 1; //CHECK ADDING 1 !!!!!!!!!!!!!!!!!!!!!!!!
+            arma::sp_mat s0(X_t * (DSp_t * (tildelogY - Theta - ((1/rho) * Gamma) - tXB)));
+            BetaSp = ((1/eta) * s0) + BetaSp; //BetaSp is temprarily W
 
 
+            BetaSp = abs(BetaSp) - w_fact_alpha;
+            arma::mat signMatrix(w);
+            signMatrix.for_each([](arma::mat::elem_type& val) { val = signum(val); } );
 
-        BetaSp = ((1/eta) * s0) + BetaSp; //BetaSp is temprarily W
+            BetaSp.for_each( [](arma::sp_mat::elem_type& val) { val = maximum(val, 0.0); } );
 
+            BetaSp = BetaSp % signMatrix; //ELEMENTWISE MULTIPLICATION
+            BetaSp = BetaSp / w_fact_1_alpha;
 
-        BetaSp = abs(BetaSp) - w_fact_alpha;
-        arma::mat signMatrix(w);
-        signMatrix.for_each([](arma::mat::elem_type& val) { val = signum(val); } );
+            tXB = DSp * (X * BetaSp);
+        }
 
-        BetaSp.for_each( [](arma::sp_mat::elem_type& val) { val = maximum(val, 0.0); } );
-
-        BetaSp = BetaSp % signMatrix; //ELEMENTWISE MULTIPLICATION
-        BetaSp = BetaSp / w_fact_1_alpha;
-
-        //ERROR CREATOR--------------------
-        //arma::vec x(10);
-        //arma::vec y(13);
-        //x.ones();
-        //y.ones();
-        //arma::vec z = x * y;
-        //ERROR CREATOR--------------------
-        //Beta <- Matrix(pmax(abs(W[,1]) - (lambda/(eta*rho)), 0)*sign(W[,1]), sparse=TRUE)
-        //tXB <- crossprod(t(D), crossprod(t(X), Beta))
-
-
-
-        tXB = DSp * (X * BetaSp);
-
-        
         // ----------------------------------
         // Gamma update
         // ----------------------------------
@@ -164,7 +144,8 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
             updateStep += 1;
         }
 
-
+        arma::vec BetaCurr(BetaSp);
+        BetaHist.col(lll - 1) = BetaCurr;
     }
 
     arma::vec BetaOut(BetaSp);
@@ -182,6 +163,7 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
     }
 
     return List::create(Named("Beta") = wrap(BetaOut),
+                      Named("BetaHist") = wrap(BetaHist),
                       Named("Theta") = wrap(ThetaOut),
                       Named("Gamma") = wrap(GammaOut),
                       Named("rho") = wrap(rho),

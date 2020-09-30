@@ -98,6 +98,9 @@ ADMM.ENpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, alpha
   BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
   euc.tildelogY <- sqrt(sum(tildelogY^2))
 
+  obj.mat <- Matrix(0, nrow = length(lambda), ncol=max.iter)
+
+  BetaHist <- Matrix(0, nrow = p, ncol = max.iter)
   #D <- Matrix(D, sparse=TRUE)
   for(kk in 1:length(lambda)){
     out <- ADMM.ENrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5,
@@ -110,6 +113,14 @@ ADMM.ENpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, alpha
     Theta <- out$Theta
     rho <- out$rho
     iter.counter <- out$iter.counter
+    BetaHist <- out$BetaHist
+
+
+    obj.vec <- vector(length = ncol(BetaHist))
+    for (i in 1:ncol(BetaHist)) {
+      obj.vec[i] <- eval.obj(logY, XB = crossprod(t(X), BetaHist[,i]), BetaHist[,i], delta, lambda[kk])
+    }
+    obj.mat[kk,] <- obj.vec
 
     if(iter.counter == max.iter){
       warning("ADMM did not converge in max.iter iterations", "\n")
@@ -118,6 +129,6 @@ ADMM.ENpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, alpha
   }
 
 
-  result <- list("beta" = BetaOut, "lambda" = lambda)
+  result <- list("beta" = BetaOut, "lambda" = lambda, "obj.mat" = obj.mat, "BetaHist" = BetaHist)
 
 }
