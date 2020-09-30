@@ -70,6 +70,9 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
     arma::sp_mat BetaSp(Beta);
     arma::sp_mat DSp(D);
 
+    arma::sp_mat DSp_t = DSp.t();
+    arma::mat X_t = X.t();
+
     for (unsigned int lll = 1; lll <= max_iter; lll++)
     {
         lll_counter++;
@@ -95,7 +98,7 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
         arma::mat w_fact_alpha = fact_alpha * w;
 
 
-        arma::sp_mat s0(X.t() * (DSp.t() * (tildelogY - Theta - ((1/rho) * Gamma) - tXB)));
+        arma::sp_mat s0(X_t * (DSp_t * (tildelogY - Theta - ((1/rho) * Gamma) - tXB)));
         arma::sp_mat A = ((1/eta) * s0) + BetaSp;
 
         arma::sp_mat softVec(arma::abs(A) - w_fact_alpha);
@@ -141,11 +144,11 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
 
         if ((lll <= 1000) && (lll % (int)(2*updateStep) == 0))
         {
-            double s = rho * norm(X.t() * (DSp.t() * (Theta - tTheta)), 2);
+            double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double r = norm(Theta - tildelogY + tXB, 2);
 
             double eprim = sqrt(l) * tol_abs + tol_rel * maximumSG(norm(tXB, 2), norm(Theta, 2), euc_tildelogY);
-            double edual = sqrt(p) * tol_abs + tol_rel * norm(X.t() * (DSp.t() * Gamma), 2);
+            double edual = sqrt(p) * tol_abs + tol_rel * norm(X_t * (DSp_t * Gamma), 2);
 
             if (r/eprim > 10*s/edual){
                 rho = rho*2;
