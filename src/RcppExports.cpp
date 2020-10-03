@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // ADMM_ENrun
-List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda, double alpha, arma::vec w, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma, double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p);
-RcppExport SEXP _penAFT_ADMM_ENrun(SEXP tildelogYSEXP, SEXP XSEXP, SEXP DSEXP, SEXP tildedeltaSEXP, SEXP rhoSEXP, SEXP etaSEXP, SEXP tauSEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP wSEXP, SEXP GammaSEXP, SEXP BetaSEXP, SEXP ThetaSEXP, SEXP max_iterSEXP, SEXP tol_absSEXP, SEXP tol_relSEXP, SEXP gammaSEXP, SEXP euc_tildelogYSEXP, SEXP XbetaSEXP, SEXP tXBSEXP, SEXP nSEXP, SEXP lSEXP, SEXP pSEXP) {
+List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda, double alpha, arma::vec w, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma, double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update);
+RcppExport SEXP _penAFT_ADMM_ENrun(SEXP tildelogYSEXP, SEXP XSEXP, SEXP DSEXP, SEXP tildedeltaSEXP, SEXP rhoSEXP, SEXP etaSEXP, SEXP tauSEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP wSEXP, SEXP GammaSEXP, SEXP BetaSEXP, SEXP ThetaSEXP, SEXP max_iterSEXP, SEXP tol_absSEXP, SEXP tol_relSEXP, SEXP gammaSEXP, SEXP euc_tildelogYSEXP, SEXP XbetaSEXP, SEXP tXBSEXP, SEXP nSEXP, SEXP lSEXP, SEXP pSEXP, SEXP max_iter_updateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -35,13 +35,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type n(nSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type l(lSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(ADMM_ENrun(tildelogY, X, D, tildedelta, rho, eta, tau, lambda, alpha, w, Gamma, Beta, Theta, max_iter, tol_abs, tol_rel, gamma, euc_tildelogY, Xbeta, tXB, n, l, p));
+    Rcpp::traits::input_parameter< unsigned int >::type max_iter_update(max_iter_updateSEXP);
+    rcpp_result_gen = Rcpp::wrap(ADMM_ENrun(tildelogY, X, D, tildedelta, rho, eta, tau, lambda, alpha, w, Gamma, Beta, Theta, max_iter, tol_abs, tol_rel, gamma, euc_tildelogY, Xbeta, tXB, n, l, p, max_iter_update));
     return rcpp_result_gen;
 END_RCPP
 }
 // ADMM_SGrun
-List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda, double alpha, arma::vec w, arma::vec v, arma::vec borderIndexes, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma, double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p, int G);
-RcppExport SEXP _penAFT_ADMM_SGrun(SEXP tildelogYSEXP, SEXP XSEXP, SEXP DSEXP, SEXP tildedeltaSEXP, SEXP rhoSEXP, SEXP etaSEXP, SEXP tauSEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP wSEXP, SEXP vSEXP, SEXP borderIndexesSEXP, SEXP GammaSEXP, SEXP BetaSEXP, SEXP ThetaSEXP, SEXP max_iterSEXP, SEXP tol_absSEXP, SEXP tol_relSEXP, SEXP gammaSEXP, SEXP euc_tildelogYSEXP, SEXP XbetaSEXP, SEXP tXBSEXP, SEXP nSEXP, SEXP lSEXP, SEXP pSEXP, SEXP GSEXP) {
+List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda, double alpha, arma::vec w, arma::vec v, arma::vec borderIndexes, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma, double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update, int G);
+RcppExport SEXP _penAFT_ADMM_SGrun(SEXP tildelogYSEXP, SEXP XSEXP, SEXP DSEXP, SEXP tildedeltaSEXP, SEXP rhoSEXP, SEXP etaSEXP, SEXP tauSEXP, SEXP lambdaSEXP, SEXP alphaSEXP, SEXP wSEXP, SEXP vSEXP, SEXP borderIndexesSEXP, SEXP GammaSEXP, SEXP BetaSEXP, SEXP ThetaSEXP, SEXP max_iterSEXP, SEXP tol_absSEXP, SEXP tol_relSEXP, SEXP gammaSEXP, SEXP euc_tildelogYSEXP, SEXP XbetaSEXP, SEXP tXBSEXP, SEXP nSEXP, SEXP lSEXP, SEXP pSEXP, SEXP max_iter_updateSEXP, SEXP GSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -70,15 +71,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type n(nSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type l(lSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type max_iter_update(max_iter_updateSEXP);
     Rcpp::traits::input_parameter< int >::type G(GSEXP);
-    rcpp_result_gen = Rcpp::wrap(ADMM_SGrun(tildelogY, X, D, tildedelta, rho, eta, tau, lambda, alpha, w, v, borderIndexes, Gamma, Beta, Theta, max_iter, tol_abs, tol_rel, gamma, euc_tildelogY, Xbeta, tXB, n, l, p, G));
+    rcpp_result_gen = Rcpp::wrap(ADMM_SGrun(tildelogY, X, D, tildedelta, rho, eta, tau, lambda, alpha, w, v, borderIndexes, Gamma, Beta, Theta, max_iter, tol_abs, tol_rel, gamma, euc_tildelogY, Xbeta, tXB, n, l, p, max_iter_update, G));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_penAFT_ADMM_ENrun", (DL_FUNC) &_penAFT_ADMM_ENrun, 23},
-    {"_penAFT_ADMM_SGrun", (DL_FUNC) &_penAFT_ADMM_SGrun, 26},
+    {"_penAFT_ADMM_ENrun", (DL_FUNC) &_penAFT_ADMM_ENrun, 24},
+    {"_penAFT_ADMM_SGrun", (DL_FUNC) &_penAFT_ADMM_SGrun, 27},
     {NULL, NULL, 0}
 };
 

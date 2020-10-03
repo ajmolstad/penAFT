@@ -48,7 +48,7 @@ double maximum(double num1, double num2, double num3) {
 // [[Rcpp::export]]
 List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
     double alpha, arma::vec w, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
-    double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p)
+    double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update)
 {
 
     int updateStep = 1;
@@ -121,7 +121,7 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
         //-----------------------------------------------------------
         // Step size update and convergence conditions check
         //-----------------------------------------------------------
-        if ((lll <= 2000) && (lll % (int)(1.6*updateStep) == 0))
+        if ((lll <= max_iter_update) && (lll % (int)(1.6*updateStep) == 0))
         {
             double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double r = norm(Theta - tildelogY + tXB, 2);
