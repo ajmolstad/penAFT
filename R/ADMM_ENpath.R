@@ -103,7 +103,7 @@ ADMM.ENpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, alpha
     out <- ADMM.ENrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5,
                       lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta,
                       Theta = Theta,
-                      max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY)
+                      max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY, max.iter.update = 2000)
     BetaOut[,kk] <- out$Beta
     Beta <- out$Beta
     Gamma <- out$Gamma

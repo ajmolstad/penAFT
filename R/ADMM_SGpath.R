@@ -160,7 +160,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     out <- ADMM.SGrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5,
                       lambda = lambda[kk], alpha = alpha, w = w, v = v, border.indexes = border.indexes, Gamma = Gamma, Beta = Beta,
                       Theta = Theta,
-                      max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY, G = groups[length(groups)])
+                      max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY, max.iter.update = 2000, G = groups[length(groups)])
 
     Beta.data <- data.frame(out$Beta, index.vec)
     names(Beta.data) <- c("Beta", "indeces")
