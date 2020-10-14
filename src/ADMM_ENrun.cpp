@@ -66,30 +66,24 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
     int n = size(X)(0);
     int l = size(tildelogY)(0);
 
-    int updateStep = 1;
+    double updateStep = 1.0;
 
     arma::mat lam((pow(n, gamma)*lambda*alpha*w)/(eta));
     arma::mat lam2((pow(n, gamma)*lambda*(1-alpha)*w)/(eta));
 
 
     unsigned int lll_counter = 0;
+
     arma::sp_mat BetaSp(Beta);
     arma::sp_mat DSp(D);
-
     arma::sp_mat BetaPrev(BetaSp);
 
     arma::sp_mat DSp_t = DSp.t();
     arma::mat X_t = X.t();
 
-
     arma::mat tXB(DSp * (X * BetaSp));
 
     arma::vec tTheta(l);
-    arma::mat w_fact_alpha(w);
-    arma::mat w_fact_1_alpha(w);
-    arma::sp_mat s0(p, 1);
-    //arma::mat signMatrix(w);
-    //arma::vec temp(l);
 
     for (unsigned int lll = 1; lll <= max_iter; lll++)
     {
@@ -112,36 +106,11 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
         // -------------------------------------
 
 
-            // BetaPrev = BetaSp;
-            // double fact_alpha = pow(n, gamma) * lambda * alpha / (rho * eta);
-            // double fact_1_alpha = pow(n, gamma) * lambda * (1 - alpha) / (rho * eta);
-
-            // w_fact_alpha = fact_alpha * w;
-            // w_fact_1_alpha = (fact_1_alpha * w) + 1;
-            // s0 = (X_t * (DSp_t * (tildelogY - Theta - ((1/rho) * Gamma) - tXB)));
-            // BetaSp = ((1/eta) * s0) + BetaSp;
-
-            // BetaSp.for_each([](arma::sp_mat::elem_type& val) { val = absolute(val); }  );
-            // BetaSp = BetaSp - w_fact_alpha;
-            // arma::mat signMatrix(w);
-            // signMatrix.for_each([](arma::mat::elem_type& val) { val = signum(val); } );
-
-            // BetaSp.for_each( [](arma::sp_mat::elem_type& val) { val = maximum(val, 0.0); } );
-
-            // BetaSp = BetaSp % signMatrix;
-            // BetaSp = BetaSp / w_fact_1_alpha;
-
-            // tXB = DSp * (X * BetaSp);
-
-        // W <- crossprod(X, crossprod(D, t0 - Theta))/eta + Beta
-
         BetaSp = ((1 / eta) * X_t * (DSp_t * (t0 - Theta))) + BetaSp;
 
         arma::sp_mat signMatrix(BetaSp);
 
         signMatrix.for_each([](arma::mat::elem_type& val) { val = signum(val); } );
-        
-        //BetaSp.for_each( [lam, rho](arma::sp_mat::elem_type& val) { val = maximum(absolute(val) - (lam / rho), 0.0); } );
 
         BetaSp = abs(BetaSp);
 
@@ -156,12 +125,6 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
         tXB = DSp * (X * BetaSp);
 
 
-        // Beta <- Matrix(pmax(abs(W[,1]) - lam/rho, 0)*sign(W[,1]), sparse=TRUE)/(1 + lam2/rho)
-
-        // tXB <- tcrossprod(D, t(crossprod(t(X), Beta)))
-
-
-
         // ----------------------------------
         // Gamma update
         // ----------------------------------
@@ -171,7 +134,7 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
         // Step size update and convergence conditions check
         //-----------------------------------------------------------
         
-        if (lll % updateStep == 0)
+        if (lll % (int)updateStep == 0)
         {
             double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double r = norm(Theta - tildelogY + tXB, 2);
@@ -188,7 +151,7 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
             }
 
             if (r < eprim && s < edual){
-                //break;
+                break;
             }
             updateStep = (updateStep + 1)*1.1;
         }
