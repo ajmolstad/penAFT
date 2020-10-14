@@ -13,5 +13,6 @@ ADMM.ENrun <- function(tildelogY, X, D, tildedelta, rho, eta, tau,
     warning("ADMM did not converge in max.iter iterations", "\n")
   }
   
+  
   out
 }
