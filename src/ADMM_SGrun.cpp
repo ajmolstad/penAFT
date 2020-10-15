@@ -3,6 +3,7 @@
 #include <cmath>
 using namespace Rcpp;
 
+// [[Rcpp::depends("RcppArmadillo")]]
 double updateThetaEntrySG(double temp, double tildedelta_1, double tildedelta_2, double nrho) {
     double theta_entry = 0;
     if (temp > tildedelta_2 / nrho)
@@ -52,7 +53,7 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
     double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update, int G)
 {
 
-    int updateStep = 1;
+    double updateStep = 1.0;
 
     unsigned int lll_counter = 0;
     arma::sp_mat BetaSp(Beta);
@@ -146,7 +147,7 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
         //-----------------------------------------------------------
         // Step size update and convergence conditions check
         //-----------------------------------------------------------
-        if ((lll <= max_iter_update) && (lll % (int)(1.6*updateStep) == 0))
+        if ((lll % (int)(updateStep) == 0)
         {
             double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double r = norm(Theta - tildelogY + tXB, 2);
@@ -162,10 +163,14 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
                 rho = rho/2;
             }
 
-            if (r < eprim && s < edual){
-                break;
+            if (lll > 10) 
+            {
+                if (r < eprim && s < edual
+                {
+                    break;
+                }
             }
-            updateStep += 1;
+            updateStep = (updateStep + 1) * 1.1;
         }
 
     }
