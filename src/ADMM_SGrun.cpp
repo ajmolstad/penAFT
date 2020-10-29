@@ -106,7 +106,7 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
             arma::mat signMatrix(A);
             signMatrix.for_each([](arma::mat::elem_type& val) { val = signumSG(val); } );
 
-            softVec = softVec % signMatrix; 
+            softVec = softVec % signMatrix;
 
             int i = 0;
             int j = 0;
@@ -147,7 +147,7 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
         //-----------------------------------------------------------
         // Step size update and convergence conditions check
         //-----------------------------------------------------------
-        if ((lll % (int)(updateStep) == 0)
+        if (lll % (int)(updateStep) == 0)
         {
             double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double r = norm(Theta - tildelogY + tXB, 2);
@@ -155,17 +155,19 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
             double eprim = sqrt(l) * tol_abs + tol_rel * maximumSG(norm(tXB, 2), norm(Theta, 2), euc_tildelogY);
             double edual = sqrt(p) * tol_abs + tol_rel * norm(X_t * (DSp_t * Gamma), 2);
 
-            if (r/eprim > 10*s/edual){
+            if (r/eprim > 10*s/edual)
+            {
                 rho = rho*2;
             }
 
-            if (s/edual > 10*r/eprim){
+            if (s/edual > 10*r/eprim)
+            {
                 rho = rho/2;
             }
 
-            if (lll > 10) 
+            if (lll > 10)
             {
-                if (r < eprim && s < edual
+                if (r < eprim && s < edual)
                 {
                     break;
                 }
