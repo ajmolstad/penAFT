@@ -67,7 +67,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   # --------------------------------------------------------------------------------
   # Sorting indexes by their groups and determining "border indexes" of groups
   # --------------------------------------------------------------------------------
-  indexes.data <- data.frame(groups, w, v, 1:p)
+  indexes.data <- data.frame(groups, w, 1:p)
   names(indexes.data) <- c("group", "w", "index")
   indexes.data <- indexes.data[order(indexes.data$group),]
   index.vec <- indexes.data$index
@@ -84,6 +84,13 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     }
   }
   border.indexes[length(border.indexes)] <- p + 1
+
+  X <- X[, index.vec]
+
+  #inv.data <- data.frame(index.vec, 1:p)
+  #inv.data <- inv.data[order(index.vec),]
+
+  #inv.index.vec <- inv.data[,2]
 
   # --------------------------------
   # Get initial values
