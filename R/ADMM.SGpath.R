@@ -52,7 +52,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter, lambda, alpha, w, v, group
 	}
 	Xbeta <- crossprod(t(X), Beta)
 	tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
-	rho <- 1
+	rho <- 1.5
 	BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
 	euc.tildelogY <- sqrt(sum(tildelogY^2))
   

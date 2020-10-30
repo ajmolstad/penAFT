@@ -166,7 +166,7 @@ sourceCpp("C:/Users/DELL/Desktop/Prof M penAFT/penAFT/src/Test.cpp")
 
 set.seed(234)
 #set.seed(1)
-temp <- genSurvData(n = 200, p = 500, rho = 0.25, scale=2.0, shape=1.5, cens.quant = .6)
+temp <- genSurvData(n = 175, p = 500, rho = 0.25, scale=2.0, shape=1.5, cens.quant = .6)
 X <- temp$X
 logY <- log(temp$time)
 delta <- temp$status
@@ -193,7 +193,7 @@ weights <- data.frame(w, v)
 ptm <- proc.time()
 store_R <- penAFT(
   X, logY, delta, 
-  nlambda = 1,
+  nlambda = 10,
   lambda.ratio.min = .1, lambda = NULL,
   penalty = "SG",
   alpha = 0.5, weights = weights, groups = groups,
@@ -212,8 +212,8 @@ Beta_2 <- store_R$beta
 sum(abs(Beta_1 - Beta_2))
 
 
-Beta_1_1 <- Beta_1[,1]
-Beta_2_1 <- Beta_2[,1]
+Beta_1_1 <- Beta_1[,2]
+Beta_2_1 <- Beta_2[,2]
 
 sum(abs(Beta_1_1 - Beta_2_1))
 

@@ -75,6 +75,6 @@ ADMM.SGrun <- function(tildelogY, X, D, tildedelta, rho, eta, tau,
 		"Beta" = Beta,
 		"Gamma" = Gamma,
 		"Theta" = Theta,
-		"rho" = rho,
+		"rho" = rho
 		))
 }

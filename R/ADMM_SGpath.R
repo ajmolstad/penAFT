@@ -172,7 +172,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, lambda, alpha, w, v
   Xbeta <- crossprod(t(X), Beta)
   tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
   #eta <- eta/2
-  rho <- 1
+  rho <- 1.5
   BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
   euc.tildelogY <- sqrt(sum(tildelogY^2))
 
@@ -198,10 +198,6 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, lambda, alpha, w, v
     
     tildedelta_nrho <- out$tildedelta_nrho
 
-    if (kk == 7) {
-      BetaHist <- out$BetaHist
-
-    }
 
     if(iter.counter == max.iter){
       warning("ADMM did not converge in max.iter iterations", "\n")
