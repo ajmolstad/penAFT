@@ -27,7 +27,8 @@ penAFT <- function(X, logY, delta,
                    groups = NULL, tol.abs = 1e-10, 
                    tol.rel = 5e-4, 
                    gamma = 0, center = TRUE, 
-                   standardize = FALSE) {
+                   standardize = FALSE,
+                   admm.max.iter = 1e4, quiet=TRUE) {
                      
   # ----------------------------------------------------------
   # Preliminary checks
@@ -72,22 +73,25 @@ penAFT <- function(X, logY, delta,
   # -----------------------------------------------------------
   # Get candidate tuning parameters
   # -----------------------------------------------------------
-  gradient_g <- function(X.fit, logY, beta, delta) {
-    n <- nrow(X.fit)
-    p <- ncol(X.fit)
-    grad <- rep(0, p)
-    Xbeta <- crossprod(t(X.fit), beta)
-    E <- logY - Xbeta
-    for (i in 1:n) {
+   EN_TPcalc <- function(X.fit, logY, delta) {
+    n <- nrow(logY)
+    grad <- rep(0, dim(X.fit)[2])
+    grad2 <- rep(0, dim(X.fit)[2])
+    for (i in which(delta==1)) {
       for (j in 1:n) {
-        term <- delta[i]*(X.fit[i,] - X.fit[j,])*(E[i] <= E[j])
-        grad <- grad + term
+        if(logY[i] != logY[j]){
+          grad <- grad + delta[i]*(X.fit[i,] - X.fit[j,])*(logY[i] < logY[j])
+        } else {
+          grad2 <- grad2 + delta[i]*abs(X.fit[i,] - X.fit[j,])
+        } 
       }
     }
-    return(grad/n^2)
+
+    return(abs(grad)/n^2 + grad2/n^2)
   }
-  gradG <- gradient_g(X.fit, logY, rep(0, p), delta)
-  
+
+  gradG <- EN_TPcalc(X.fit, logY, delta)
+
   if (penalty == "EN"){
     if(is.null(weights)){
       w <- rep(1, p)
@@ -104,7 +108,7 @@ penAFT <- function(X, logY, delta,
       if(any(wTemp==0)){
         wTemp[which(wTemp == 0)] <- Inf
       }
-      lambda.max <- max(abs(gradG/wTemp))/alpha + 1e-6
+      lambda.max <- max(gradG/wTemp)/alpha + 1e-6
       if (is.null(lambda.ratio.min)) {
         lambda.ratio.min <- 0.1
       }
@@ -118,9 +122,9 @@ penAFT <- function(X, logY, delta,
     # -----------------------------------------------
     # Fit the solution path for the elastic net
     # -----------------------------------------------
-    getPath <- ADMM.ENpath(X.fit, logY, delta, lambda, alpha, w, tol.abs, tol.rel, gamma)
+    getPath <- ADMM.ENpath(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol.abs, tol.rel, gamma, quiet)
     
-  }  else {
+   } else {
     if (penalty == "SG") {
       if (is.null(groups)) {
         stop("To use group-lasso penalty, must specify 'groups'!")
@@ -142,22 +146,49 @@ penAFT <- function(X, logY, delta,
         }
       }
       
-      if (is.null(lambda)) {
-       lambda.max <- max(abs(gradG/w))/alpha
-       if (is.null(lambda.ratio.min)) {
-         lambda.ratio.min <- 0.01
-       }
-       lambda.min <- lambda.ratio.min*lambda.max
-       lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
-        
-      } else {
-        warning("It is recommended to let tuning parameters be chosen automatically: see documentation.")
+
+    if (is.null(lambda)) {
+      if (length(unique(logY)) == length(logY)) {
+
+        getGrad <- function(X.fit, logY, delta) {
+          n <- nrow(logY)
+          grad <- rep(0, dim(X.fit)[2])
+          for (i in which(delta==1)) {
+            for (j in 1:n) {
+                grad <- grad + delta[i]*(X.fit[i,] - X.fit[j,])*(logY[i] < logY[j])
+              } 
+          }
+          return(grad/n^2)
+        }
+
+        grad <- getGrad(X.fit, logY, delta)
+
+        lam.check <- 10^seq(-4, 4, length=500)
+        check.array <- matrix(0, nrow=length(lam.check), ncol=G)
+        for(j in 1:length(lam.check)){
+          for(k in 1:G){
+            t0 <- pmax(abs(grad[which(groups==k)]) - alpha*lam.check[j]*w[which(groups==k)], 0)*sign(grad[which(groups==k)])
+            check.array[j,k] <- sqrt(sum(t0^2)) < v[k]*(1-alpha)*lam.check[j] 
+          }
+        }
+
+      lambda.max <- lam.check[min(which(rowSums(check.array) == G))] + 1e-6
+      if (is.null(lambda.ratio.min)) {
+        lambda.ratio.min <- 0.1
       }
-      
+      lambda.min <- lambda.ratio.min*lambda.max
+      lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
+
+      } else {
+        stop("Ties present in the input logY!")
+      }
+    } else {
+      warning("It is recommended to let tuning parameters be chosen automatically: see documentation.")
+    }
       # ------------------------------------------------------
       # Fit the solution path for the sparse group lasso
       # ------------------------------------------------------
-      getPath <- ADMM.SGpath(X.fit, logY, delta, lambda, alpha, w, v, groups, tol.abs, tol.rel, gamma)
+      getPath <- ADMM.SGpath(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, v, groups, tol.abs, tol.rel, gamma, quiet)
       
     }
   }

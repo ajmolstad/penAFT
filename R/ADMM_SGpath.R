@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------
 # Function for computing the solution path using sparse group lasso penalty
 # -----------------------------------------------------------------------------
-ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho = 2, tau = 1.1, lambda.ratio = .1, alpha, w, v, groups, tol.abs, tol.rel, gamma) {
+ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, lambda, alpha, w, v, groups, tol.abs, tol.rel, gamma, quiet) {
 
 
   # -------------------------------------
@@ -51,17 +51,6 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     grad/n^2
   }
 
-  lambda.max <- 0
-  temp.grad <- gradient_g(X, logY, rep(0, dim(X)[2]), delta)
-  for(g in 1:length(unique(groups))){
-    lambda.max <- max(lambda.max, sqrt(sum(temp.grad[groups==g]^2)))
-  }
-  #lambda.max <- max(apply(gradient_g(X, logY, rep(0, dim(X)[2]), delta), 1, function(x){sqrt(sum(x^2))}))
-
-  lambda.max <- lambda.max + 1e-6
-  lambda.min <- lambda.ratio*lambda.max
-  lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
-
 
 
   # --------------------------------------------------------------------------------
@@ -86,6 +75,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   border.indexes[length(border.indexes)] <- p + 1
 
   X <- X[, index.vec]
+  
 
   #inv.data <- data.frame(index.vec, 1:p)
   #inv.data <- inv.data[order(index.vec),]
@@ -142,18 +132,43 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   }
 
 
+  #tildedelta <- matrix(0, nrow = l, ncol = 2)
+  #counter <- 1
+  #for(j in 1:(n-1)){
+  #  for(k in (j+1):n){
+  #    if(delta[j]!=0 | delta[k]!=0){
+  #      tildedelta[counter,] <- c(delta[j], delta[k])
+  #      counter <- counter + 1
+  #    }
+  #  }
+  #}
+  
+  Theta <- rep(0, l)
+  D <- matrix(0, nrow=l, ncol=n)
+  tildelogY <- rep(0, l)
   tildedelta <- matrix(0, nrow = l, ncol = 2)
   counter <- 1
   for(j in 1:(n-1)){
     for(k in (j+1):n){
       if(delta[j]!=0 | delta[k]!=0){
+        Theta[counter] <- logY[j] - logY[k]
+        D[counter, j] <- 1
+        D[counter, k] <- -1
+        tildelogY[counter] <- logY[j] - logY[k]
         tildedelta[counter,] <- c(delta[j], delta[k])
         counter <- counter + 1
       }
     }
   }
 
-  eta <- max(eigen(crossprod(crossprod(t(D), X)))$val)
+  if(n < 200){
+    eta <- max(eigen(crossprod(crossprod(t(D), X)))$val)  
+  } else {
+    eta <- n*max(svd(X)$d)^2
+  }
+  
+  
+  
   Xbeta <- crossprod(t(X), Beta)
   tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
   #eta <- eta/2
@@ -162,7 +177,8 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   euc.tildelogY <- sqrt(sum(tildelogY^2))
 
 
-  #D <- Matrix(D, sparse=TRUE)
+  D <- Matrix(D, sparse=TRUE)
+  
   for(kk in 1:length(lambda)){
     out <- ADMM.SGrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5,
                       lambda = lambda[kk], alpha = alpha, w = w, v = v, border.indexes = border.indexes, Gamma = Gamma, Beta = Beta,
@@ -178,6 +194,9 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
     Theta <- out$Theta
     rho <- out$rho
     iter.counter <- out$iter.counter
+    
+    
+    tildedelta_nrho <- out$tildedelta_nrho
 
     if (kk == 7) {
       BetaHist <- out$BetaHist
@@ -192,7 +211,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter = 5000, nlambda = 50, rho =
   }
 
 
-  result <- list("beta" = BetaOut, "lambda" = lambda, "BetaHist" = BetaHist)
+  result <- list("beta" = BetaOut, "lambda" = lambda, "tildedelta_nrho" = tildedelta_nrho)
 
 }
 

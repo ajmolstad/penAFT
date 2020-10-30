@@ -1,4 +1,4 @@
-ADMM.ENpath <- function(X.fit, logY, delta, lambda, alpha, w, tol.abs, tol.rel, gamma){
+ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol.abs, tol.rel, gamma, quiet){
   
   	# -------------------------------------
 	# Objective function evaluator 
@@ -54,21 +54,26 @@ ADMM.ENpath <- function(X.fit, logY, delta, lambda, alpha, w, tol.abs, tol.rel, 
 		}
 	}
 
+	print(length(D[D != 0]))
+	
 	D <- Matrix(D, sparse=TRUE)
+	
+	
 	Gamma  <- -sign(Theta)
 	Beta <- rep(0, p)
-	if(n < 300){
+	if(n < 200 && p < 500){
 		eta <- max(eigen(crossprod(crossprod(t(D), X)))$val)  
 	} else {
 		eta <- n*max(svd(X)$d)^2
 	}
 	Xbeta <- crossprod(t(X), Beta)
 	tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
-	#eta <- eta/2
-	rho <- 2
+	rho <- 1
 	BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
 	euc.tildelogY <- sqrt(sum(tildelogY^2))
 
+	iter.vec <- vector(length = length(lambda))
+	ptm <- proc.time()
 	for(kk in 1:length(lambda)){
 		out <- ADMM.ENrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5, 
 			lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta, 
@@ -79,10 +84,14 @@ ADMM.ENpath <- function(X.fit, logY, delta, lambda, alpha, w, tol.abs, tol.rel, 
 		Gamma <- out$Gamma
 		Theta <- out$Theta
 		rho <- out$rho
-		cat("Through tp ", kk, "\n")
+		#iter.vec[kk] <- out$iter.counter
+		if (!quiet) {
+			cat("Through ", kk,"th tuning parameter...", "\n")
+		}
 	}
+	
+	print(proc.time() - ptm)
 
-
-	result <- list("beta" = BetaOut, "lambda" = lambda)
+	result <- list("beta" = BetaOut, "lambda" = lambda, "iterations" = iter.vec)
 
 }
