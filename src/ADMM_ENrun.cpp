@@ -62,9 +62,9 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
     double euc_tildelogY)
 {
 
-    int p = size(X)(1);
-    int n = size(X)(0);
-    int l = size(tildelogY)(0);
+    unsigned int p = size(X)(1);
+    unsigned int n = size(X)(0);
+    unsigned int l = size(tildelogY)(0);
 
     double updateStep = 1.0;
 
@@ -150,9 +150,11 @@ List ADMM_ENrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
                 rho = rho/2;
             }
 
-            if (r < eprim && s < edual){
-                break;
-            }
+            if (lll > 10) {
+            	if (r < eprim && s < edual){
+                	break;
+            	}
+        	}
             updateStep = (updateStep + 1)*1.1;
         }
 

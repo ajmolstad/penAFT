@@ -18,6 +18,25 @@ double updateThetaEntrySG(double temp, double tildedelta_1, double tildedelta_2,
 }
 
 
+arma::vec ThetaUpdateSG(const arma::mat& temp, const arma::mat& tildedelta_nrho) {
+    
+    arma::vec Theta(tildedelta_nrho.n_rows); Theta.zeros(); 
+
+    for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) {
+        if (temp(m) > tildedelta_nrho(m,1)) {
+            Theta(m) = temp(m) - tildedelta_nrho(m,1);
+        } else {
+            if (temp(m) < -tildedelta_nrho(m,0)) {
+                Theta(m) = temp(m) + tildedelta_nrho(m,0);
+            }
+        }
+    }
+
+    return Theta;
+
+}
+
+
 int signumSG(double num) {
   if (num < 0) {
     return -1;
@@ -47,10 +66,15 @@ double maximumSG(double num1, double num2, double num3) {
 }
 
 
+
+// List ADMM_SGrun(arma::mat tildelogY, arma::mat X, arma::sp_mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
+//     double alpha, arma::mat w, arma::mat v, arma::mat borderIndexes, arma::mat Gamma, arma::mat Beta, arma::mat Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
+//     double euc_tildelogY, arma::mat Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update, int G)
+
 // [[Rcpp::export]]
-List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
+List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
     double alpha, arma::vec w, arma::vec v, arma::vec borderIndexes, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
-    double euc_tildelogY, arma::vec Xbeta, arma::vec tXB, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update, int G)
+    double euc_tildelogY, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update, int G)
 {
 
     double updateStep = 1.0;
@@ -65,10 +89,27 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
     arma::sp_mat BetaPrev(BetaSp);
 
     arma::vec tTheta(l);
+    arma::vec tGamma(l);
+
+
     arma::mat w_fact_alpha(w);
     arma::sp_mat s0(p, 1);
     arma::mat signMatrix(w);
     arma::vec temp(l);
+
+    arma::sp_mat tXB(DSp * (X * BetaSp));
+
+    double lam = (pow(n, gamma)*lambda*alpha) / eta;
+
+    arma::vec h1Vals(G);
+
+    arma::vec W_out(p);
+
+    arma::vec tt0(l);
+
+    arma::mat ttildedelta_nrho(l,1);
+
+    arma::vec outTheta(l);
 
     for (unsigned int lll = 1; lll <= max_iter; lll++)
     {
@@ -79,70 +120,119 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
         // ---------------------------------
         tTheta = Theta;
         double nrho = pow(n, 2 - gamma) * rho;
-        arma::vec temp(tildelogY - tXB - ((1/rho) * Gamma));
+        arma::mat t0(tildelogY - tXB - ((1/rho) * Gamma));
 
-        for (unsigned int m = 0; m < l; m++)
-        {
-            Theta(m) = updateThetaEntrySG(temp(m), tildedelta(m,0), tildedelta(m,1), nrho);
-        }
+        tt0 = t0;
+
+        //for (unsigned int m = 0; m < l; m++)
+        //{
+        //    Theta(m) = updateThetaEntrySG(temp(m), tildedelta(m,0), tildedelta(m,1), nrho);
+        //}
+        arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) * rho;
+        ttildedelta_nrho = tildedelta_nrho;
+        Theta = ThetaUpdateSG(t0, tildedelta_nrho);
+
+        outTheta = Theta;
+
+        //for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) {
+        //if (t0(m) > tildedelta_nrho(m,1)) {
+        //    Theta(m) = t0(m) - tildedelta_nrho(m,1);
+        //} else {
+        //    if (t0(m) < -tildedelta_nrho(m,0)) {
+        //        Theta(m) = t0(m) + tildedelta_nrho(m,0);
+        //    }
+        //}
 
         // -------------------------------------
         // Beta update
         // -------------------------------------
-        do
+
+        //BetaPrev = BetaSp;
+        // double fact_alpha = pow(n, gamma) * lambda * alpha / (rho * eta);
+        // double fact_1_alpha = pow(n, gamma) * lambda * (1 - alpha) / (rho * eta);
+
+        // w_fact_alpha = (fact_alpha * w);
+
+        // s0 = (X_t * (DSp_t * (tildelogY - Theta - ((1/rho) * Gamma) - tXB)));
+        // arma::sp_mat A(((1/eta) * s0) + BetaSp);
+
+        // arma::sp_mat softVec(arma::abs(A) - w_fact_alpha);
+        // softVec.for_each( [](arma::sp_mat::elem_type& val) { val = maximumSG(val, 0.0); } );
+
+        // arma::mat signMatrix(A);
+        // signMatrix.for_each([](arma::mat::elem_type& val) { val = signumSG(val); } );
+
+        // softVec = softVec % signMatrix;
+
+        // int i = 0;
+        // int j = 0;
+        // double softDenom = 0.0;
+        // double r0 = 0.0;
+        // double r1 = 0.0;
+
+        // for (int g = 0; g < G - 1; g++)
+        // {
+        //     i = borderIndexes(g) - 1;
+        //     j = borderIndexes(g+1) - 2;
+
+        //     softDenom = norm(softVec.submat(i, 0, j, 0), 2);
+
+        //     if (softDenom < 1e-30)
+        //     {
+        //         r1 = 0.0;
+        //     }
+        //     else
+        //     {
+        //         r0 = (v(g) * fact_1_alpha) / softDenom;
+        //         r1 = maximumSG(1 - r0, 0);
+        //     }
+
+        //     BetaSp.submat(i, 0, j, 0) = r1 * softVec.submat(i, 0, j, 0);
+        // }
+
+        BetaPrev = BetaSp;
+
+        arma::sp_mat W((X_t * (DSp_t * (t0 - Theta)))/eta + BetaSp);
+
+        for (int ff = 0; ff < p; ff++) 
         {
-            BetaPrev = BetaSp;
-            double fact_alpha = pow(n, gamma) * lambda * alpha / (rho * eta);
-            double fact_1_alpha = pow(n, gamma) * lambda * (1 - alpha) / (rho * eta);
+            W_out(ff) = W(ff);
+        }
 
-            w_fact_alpha = (fact_alpha * w);
 
-            s0 = (X_t * (DSp_t * (tildelogY - Theta - ((1/rho) * Gamma) - tXB)));
-            arma::sp_mat A(((1/eta) * s0) + BetaSp);
+        int i = 0;
+        int j = 0;
+        for (int g = 0; g < G; g++)
+        {
+            i = borderIndexes(g) - 1;
+            j = borderIndexes(g+1) - 2;
 
-            arma::sp_mat softVec(arma::abs(A) - w_fact_alpha);
-            softVec.for_each( [](arma::sp_mat::elem_type& val) { val = maximumSG(val, 0.0); } );
-
-            arma::mat signMatrix(A);
+            arma::mat h(arma::abs(W.submat(i, 0, j, 0)) - (lam / rho) * w.submat(i, 0, j, 0));
+            h.for_each( [](arma::sp_mat::elem_type& val) { val = maximumSG(val, 0.0); } );
+            arma::mat signMatrix(W.submat(i, 0, j, 0));
             signMatrix.for_each([](arma::mat::elem_type& val) { val = signumSG(val); } );
 
-            softVec = softVec % signMatrix;
+            arma::mat h0(h % signMatrix);
+            double h1 = norm(h0, 2);
 
-            int i = 0;
-            int j = 0;
-            double softDenom = 0.0;
-            double r0 = 0.0;
-            double r1 = 0.0;
-
-            for (int g = 0; g < G - 1; g++)
+            h1Vals(g) = h1;
+            if (h1 > 0)
             {
-                i = borderIndexes(g) - 1;
-                j = borderIndexes(g+1) - 2;
-
-                softDenom = norm(softVec.submat(i, 0, j, 0), 2);
-
-                if (abs(softDenom) < 1e-30)
-                {
-                    r1 = 0.0;
-                }
-                else
-                {
-                    r0 = (v(g) * fact_1_alpha) / softDenom;
-                    r1 = maximumSG(1 - r0, 0);
-                }
-
-                BetaSp.submat(i, 0, j, 0) = r1 * softVec.submat(i, 0, j, 0);
+                BetaSp.submat(i, 0, j, 0) = maximumSG(1 - v(g) * lambda * (1 - alpha) / (eta * rho * h1), 0) * h0;
             }
 
+        }
 
-            tXB = DSp * (X * BetaSp);
 
-        } while(norm(BetaPrev - BetaSp, 2) > 1e-2);
+        tXB = DSp * (X * BetaSp);
+
 
         // ----------------------------------
         // Gamma update
         // ----------------------------------
         Gamma = Gamma + tau*rho*(Theta - tildelogY + tXB);
+
+        tGamma = Gamma;
 
         //-----------------------------------------------------------
         // Step size update and convergence conditions check
@@ -183,17 +273,21 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::mat D, arma::mat tildede
 
     for (unsigned int i = 0; i < l; i++)
     {
-        ThetaOut(i) = Theta(i);
+        ThetaOut(i) = outTheta(i);
     }
 
     for (unsigned int i = 0; i < l; i++)
     {
-        GammaOut(i) = Gamma(i);
+        GammaOut(i) = tGamma(i);
     }
 
     return List::create(Named("Beta") = wrap(BetaOut),
                       Named("Theta") = wrap(ThetaOut),
                       Named("Gamma") = wrap(GammaOut),
                       Named("rho") = wrap(rho),
+                      Named("h1Vals") = wrap(h1Vals),
+                      Named("W_out") = wrap(W_out),
+                      Named("t0") = wrap(tt0),
+                      Named("tildedelta_nrho") = wrap(ttildedelta_nrho),
                       Named("iter.counter") = wrap(lll_counter));
 }
