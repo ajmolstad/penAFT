@@ -53,11 +53,7 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
     arma::vec tTheta(l);
     arma::vec tGamma(l);
 
-
-    arma::mat w_fact_alpha(w);
-    arma::sp_mat s0(p, 1);
     arma::mat signMatrix(w);
-    arma::vec temp(l);
 
     arma::sp_mat tXB(DSp * (X * BetaSp));
 
