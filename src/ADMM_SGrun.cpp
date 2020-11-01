@@ -4,24 +4,6 @@
 using namespace Rcpp;
 
 // [[Rcpp::depends("RcppArmadillo")]]
-arma::vec ThetaUpdateSG(const arma::mat& temp, const arma::mat& tildedelta_nrho) {
-    
-    arma::vec Theta(tildedelta_nrho.n_rows); Theta.zeros(); 
-
-    for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) {
-        if (temp(m) > tildedelta_nrho(m,1)) {
-            Theta(m) = temp(m) - tildedelta_nrho(m,1);
-        } else {
-            if (temp(m) < -tildedelta_nrho(m,0)) {
-                Theta(m) = temp(m) + tildedelta_nrho(m,0);
-            }
-        }
-    }
-
-    return Theta;
-
-}
-
 
 int signumSG(double num) {
   if (num < 0) {
@@ -95,7 +77,6 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
         arma::mat t0(tildelogY - tXB - ((1/rho) * Gamma));
 
         arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) / rho;
-        //Theta = ThetaUpdateSG(t0, tildedelta_nrho);
 
         for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) 
         {
@@ -121,7 +102,6 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
         BetaPrev = BetaSp;
 
         arma::sp_mat W((X_t * (DSp_t * (t0 - Theta)))/eta + BetaSp);
-
 
         int i = 0;
         int j = 0;
