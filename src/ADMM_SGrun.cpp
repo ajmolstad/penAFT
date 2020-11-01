@@ -54,7 +54,7 @@ double maximumSG(double num1, double num2, double num3) {
 // [[Rcpp::export]]
 List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
     double alpha, arma::vec w, arma::vec v, arma::vec borderIndexes, arma::vec Gamma, arma::vec Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
-    double euc_tildelogY, unsigned int n, unsigned int l, unsigned int p, unsigned int max_iter_update, int G)
+    double euc_tildelogY, unsigned int n, unsigned int l, unsigned int p, int G)
 {
 
     double updateStep = 1.0;
@@ -94,8 +94,27 @@ List ADMM_SGrun(arma::vec tildelogY, arma::mat X, arma::sp_mat D, arma::mat tild
         double nrho = pow(n, 2 - gamma) * rho;
         arma::mat t0(tildelogY - tXB - ((1/rho) * Gamma));
 
-        arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) * rho;
-        Theta = ThetaUpdateSG(t0, tildedelta_nrho);
+        arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) / rho;
+        //Theta = ThetaUpdateSG(t0, tildedelta_nrho);
+
+        for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) 
+        {
+            if (t0(m) > tildedelta_nrho(m,1)) 
+            {
+                Theta(m) = t0(m) - tildedelta_nrho(m,1);
+            } 
+            else 
+            {
+                if (t0(m) < -tildedelta_nrho(m,0)) 
+                {
+                    Theta(m) = t0(m) + tildedelta_nrho(m,0);
+                }
+                else
+                {
+                    Theta(m) = 0.0;
+                }
+            }
+        }
 
         outTheta = Theta;
 
