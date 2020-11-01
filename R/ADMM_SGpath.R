@@ -85,7 +85,13 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter, lambda, alpha, w, v, group
                       lambda = lambda[kk], alpha = alpha, w = w, v = v, border.indexes = border.indexes, Gamma = Gamma, Beta = Beta, 
                       Theta = Theta, 
                       max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY, G = groups[length(groups)])
-    BetaOut[,kk] <- out$Beta
+
+    
+    Beta.data <- data.frame(out$Beta, index.vec)
+    names(Beta.data) <- c("Beta", "indeces")
+    Beta.data.unsorted <- Beta.data[order(Beta.data$indeces),]
+    BetaOut[,kk] <- Beta.data.unsorted$Beta
+    
     Beta <- out$Beta
     Gamma <- out$Gamma
     Theta <- out$Theta
