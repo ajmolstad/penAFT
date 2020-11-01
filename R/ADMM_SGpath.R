@@ -91,14 +91,14 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter, lambda, alpha, w, v, group
     names(Beta.data) <- c("Beta", "indeces")
     Beta.data.unsorted <- Beta.data[order(Beta.data$indeces),]
     BetaOut[,kk] <- Beta.data.unsorted$Beta
-    
+
     Beta <- out$Beta
     Gamma <- out$Gamma
     Theta <- out$Theta
     rho <- out$rho
     
     
-    tildedelta_nrho <- out$tildedelta_nrho
+    #tildedelta_nrho <- out$tildedelta_nrho
     
     
     if (!quiet) {
@@ -106,8 +106,14 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter, lambda, alpha, w, v, group
     }
   }
   
+  #BetaOutD <- Matrix(BetaOut, sparse = FALSE)
+  #Beta.data <- data.frame(BetaOutD, index.vec)
+  #Beta.data.unsorted <- Beta.data[order(Beta.data[,ncol(Beta.data)]),]
+  #BetaOut <- Beta.data.unsorted[,1:(ncol(Beta.data)-1)]
   
-  result <- list("beta" = BetaOut, "lambda" = lambda, "tildedelta_nrho" = tildedelta_nrho)
+  
+  
+  result <- list("beta" = BetaOut, "lambda" = lambda)
   
 }
 
