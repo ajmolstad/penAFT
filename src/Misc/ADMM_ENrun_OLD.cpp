@@ -55,8 +55,8 @@ double absolute(double num) {
 }
 
 // [[Rcpp::export]]
-List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X, 
-    const arma::mat& D_pos, const arma::mat& D_vert_1, const arma::mat& D_vert_neg1, const arma::mat& tildedelta, 
+List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X, const arma::sp_mat& D, 
+    const arma::mat& D_pos, const arma::mat& tildedelta, 
     double rho, double eta, double tau, double lambda,
     double alpha, const arma::vec& w, arma::vec Gamma, const arma::vec& Beta, arma::vec Theta, 
     unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
@@ -78,23 +78,15 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
     arma::sp_mat BetaSp(Beta);
     //arma::sp_mat DSp(D);
 
-    //arma::sp_mat DSp_t = D.t();
+    arma::sp_mat DSp_t = D.t();
     arma::mat X_t = X.t();
 
     arma::vec tXB(l);
     arma::vec XBeta(X * BetaSp);
 
-    arma::vec t0_Theta(l);
-    arma::vec D_t0_Theta(n);
-
-    arma::vec Theta_tTheta(l);
-    arma::vec D_Theta_tTheta(n);
-
-    arma::vec D_Gamma(n);
-
     //arma::mat tXB(DSp * (X * BetaSp));
-    int ii = 0;
-    int jj = 0;
+    unsigned int ii = 0;
+    unsigned int jj = 0;
 
     for (unsigned int k = 0; k < l; k++) 
     {
@@ -127,34 +119,7 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
         // -------------------------------------
 
 
-        //BetaSp = ((1 / eta) * X_t * (DSp_t * (t0 - Theta))) + BetaSp;
-
-        t0_Theta = t0 - Theta;
-
-        for (unsigned int ee = 0; ee < n; ee++) 
-    	{
-
-        	double sumRow = 0.0;
-        	for (unsigned int ff = 0; ff < n; ff++) 
-        	{
-        		ii = D_vert_1(ee,ff) - 1;
-        		jj = D_vert_neg1(ee,ff) - 1;
-
-        		if (ii >= 0) 
-        		{
-        			sumRow += t0_Theta(ii);
-        		}
-        		if (jj >= 0)
-        		{
-        			sumRow -= t0_Theta(jj);
-        		}
-        	}
-
-        	D_t0_Theta(ee) = sumRow;
-
-    	}
-
-    	BetaSp = ((1 / eta) * X_t * D_t0_Theta) + BetaSp;
+        BetaSp = ((1 / eta) * X_t * (DSp_t * (t0 - Theta))) + BetaSp;
 
         arma::sp_mat signMatrix(BetaSp);
 
@@ -190,64 +155,11 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
         
         if (lll % (int)updateStep == 0)
         {
-
-        	Theta_tTheta = Theta - tTheta;
-
-
-	        for (unsigned int ee = 0; ee < n; ee++) 
-	    	{
-
-	        	double sumRow = 0.0;
-	        	for (unsigned int ff = 0; ff < n; ff++) 
-	        	{
-	        		ii = D_vert_1(ee,ff) - 1;
-	        		jj = D_vert_neg1(ee,ff) - 1;
-
-	        		if (ii >= 0) 
-	        		{
-	        			sumRow += Theta_tTheta(ii);
-	        		}
-	        		if (jj >= 0)
-	        		{
-	        			sumRow -= Theta_tTheta(jj);
-	        		}
-	        	}
-
-	        	D_Theta_tTheta(ee) = sumRow;
-
-	    	}
-
-
-            //double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
-            double s = rho * norm(X_t * D_Theta_tTheta, 2);
+            double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double r = norm(Theta - tildelogY + tXB, 2);
 
             double eprim = sqrt(l) * tol_abs + tol_rel * maximum(norm(tXB, 2), norm(Theta, 2), euc_tildelogY);
-
-            for (unsigned int ee = 0; ee < n; ee++) 
-	    	{
-
-	        	double sumRow = 0.0;
-	        	for (unsigned int ff = 0; ff < n; ff++) 
-	        	{
-	        		ii = D_vert_1(ee,ff) - 1;
-	        		jj = D_vert_neg1(ee,ff) - 1;
-
-	        		if (ii >= 0) 
-	        		{
-	        			sumRow += Gamma(ii);
-	        		}
-	        		if (jj >= 0)
-	        		{
-	        			sumRow -= Gamma(jj);
-	        		}
-	        	}
-
-	        	D_Gamma(ee) = sumRow;
-
-	    	}
-
-            double edual = sqrt(p) * tol_abs + tol_rel * norm(X_t * D_Gamma, 2);
+            double edual = sqrt(p) * tol_abs + tol_rel * norm(X_t * (DSp_t * Gamma), 2);
 
             if (r/eprim > 10*s/edual){
                 rho = rho*2;

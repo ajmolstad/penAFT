@@ -14,8 +14,6 @@ double softThreshold(double z,double gam){
 }
 
 
-
-
 //[[Rcpp::export]]
 arma::sp_mat SpMatMult(const arma::sp_mat& a, const arma::sp_mat& b) {
     // sparse x sparse -> sparse

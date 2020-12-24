@@ -50,6 +50,8 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter, lambda, alpha, w, v, group
   
   Theta <- rep(0, l)
   D <- matrix(0, nrow=l, ncol=n)
+  
+  D.pos <- matrix(0, nrow = l, ncol = 2)
   tildelogY <- rep(0, l)
   tildedelta <- matrix(0, nrow = l, ncol = 2)
   counter <- 1
@@ -59,6 +61,10 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter, lambda, alpha, w, v, group
         Theta[counter] <- logY[j] - logY[k]
         D[counter, j] <- 1
         D[counter, k] <- -1
+        
+        D.pos[counter, 1] <- j
+        D.pos[counter, 2] <- k
+        
         tildelogY[counter] <- logY[j] - logY[k]
         tildedelta[counter,] <- c(delta[j], delta[k])
         counter <- counter + 1
@@ -81,7 +87,7 @@ ADMM.SGpath <- function(X.fit, logY, delta, max.iter, lambda, alpha, w, v, group
   euc.tildelogY <- sqrt(sum(tildelogY^2))
   
   for(kk in 1:length(lambda)){
-    out <- ADMM.SGrun(tildelogY, X, D, tildedelta, rho = rho, eta = eta, tau = 1.5, 
+    out <- ADMM.SGrun(tildelogY, X, D, D.pos, tildedelta, rho = rho, eta = eta, tau = 1.5, 
                       lambda = lambda[kk], alpha = alpha, w = w, v = v, border.indexes = border.indexes, Gamma = Gamma, Beta = Beta, 
                       Theta = Theta, 
                       max.iter = max.iter, tol.abs = tol.abs, tol.rel = tol.rel, gamma = gamma, euc.tildelogY = euc.tildelogY, G = groups[length(groups)])

@@ -1,5 +1,5 @@
-ADMM.SGrun <- function(tildelogY, X, D, tildedelta, rho, eta, tau, 
-			lambda, alpha, w, v, groups, Gamma, Beta, 
+ADMM.ENrun <- function(tildelogY, X, D, D.pos, tildedelta, rho, eta, tau, 
+			lambda, alpha, w, Gamma, Beta, 
 			Theta,  
 			max.iter, tol.abs, tol.rel, gamma, euc.tildelogY){
 
@@ -8,7 +8,8 @@ ADMM.SGrun <- function(tildelogY, X, D, tildedelta, rho, eta, tau,
 	l <- length(tildelogY)
 	updateStep <- 1
 	tXB <-  crossprod(t(D),crossprod(t(X), Beta))
-	lam <- ((n^gamma)*lambda*alpha)/(eta)
+	lam <- ((n^gamma)*lambda*alpha*w)/(eta)
+	lam2 <- ((n^gamma)*lambda*(1-alpha)*w)/(eta)
 
 	for(lll in 1:max.iter){
 
@@ -16,25 +17,24 @@ ADMM.SGrun <- function(tildelogY, X, D, tildedelta, rho, eta, tau,
 		# Theta update
 		# ---------------------------------
 		tTheta <- Theta
+		# Theta <- rep(0, l)
+		# nrho <- (n^(2 - gamma))*rho
+		# temp <- tildelogY - tXB - Gamma/rho
+		# inds1 <- which(temp > tildedelta[,2]/(nrho))
+		# inds2 <- which(temp < -tildedelta[,1]/(nrho))
+		# Theta[inds1] <- temp[inds1] - tildedelta[inds1,2]/(nrho)
+		# Theta[inds2] <- temp[inds2] + tildedelta[inds2,1]/(nrho)
 		t0 <- tildelogY - tXB - Gamma/rho
-		
 		Theta <- ThetaUpdate(as.matrix(t0), tildedelta_nrho = tildedelta/((n^(2 - gamma))*rho))
 
 		# -------------------------------------
 		# Beta update
 		# -------------------------------------
+		#for(jj in 1:5){
 		W <- crossprod(X, crossprod(D, t0 - Theta))/eta + Beta
-		
-		for (j in 1:length(unique(groups))) {
-			t0 <- pmax(abs(W[which(groups==j)]) - (lam*w[which(groups==j)])/rho, 0)*sign(W[which(groups==j)])
-			t1 <- sqrt(sum(t0^2))
-			
-			if (t1 > 0) {
-				Beta[which(groups==j)] <- max(1 - v[j]*lambda*(1-alpha)/(eta*rho*t1), 0)*t0
-			}
-		}
-		#W <- Matrix(pmax(abs(W[,1]) - lam/rho, 0)*sign(W[,1]), sparse=TRUE)
+		Beta <- Matrix(pmax(abs(W[,1]) - lam/rho, 0)*sign(W[,1]), sparse=TRUE)/(1 + lam2/rho)
 		tXB <- tcrossprod(D, t(crossprod(t(X), Beta)))
+		#}
 		# ----------------------------------
 		# Gamma
 		# ----------------------------------

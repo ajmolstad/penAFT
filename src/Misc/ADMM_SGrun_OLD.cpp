@@ -34,7 +34,7 @@ double maximumSG(double num1, double num2, double num3) {
 }
 
 // [[Rcpp::export]]
-List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat& D_pos, const arma::mat& D_vert_1, const arma::mat& D_vert_neg1, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
+List ADMM_SGrun2(const arma::vec& tildelogY, const arma::mat& X, const arma::mat& D_pos, const arma::mat& D_vert_1, const arma::mat& D_vert_neg1, arma::mat tildedelta, double rho, double eta, double tau, double lambda,
     double alpha, const arma::vec& w, const arma::vec& v, const arma::vec& borderIndexes, arma::vec Gamma, const arma::vec& Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
     double euc_tildelogY, unsigned int n, unsigned int l, unsigned int p, int G)
 {
@@ -95,7 +95,6 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
         // Theta update
         // ---------------------------------
         tTheta = Theta;
-        double nrho = pow(n, 2 - gamma) * rho;
         arma::mat t0(tildelogY - tXB - ((1/rho) * Gamma));
 
         arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) / rho;

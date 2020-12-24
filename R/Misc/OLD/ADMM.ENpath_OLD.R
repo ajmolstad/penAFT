@@ -1,4 +1,4 @@
-ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol.abs, tol.rel, gamma, quiet){
+ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol.abs, tol.rel, gamma, quiet, cpp){
   
   	# -------------------------------------
 	# Objective function evaluator 
@@ -37,13 +37,17 @@ ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol
 	l <- l - 1
 
 	Theta <- rep(0, l)
+	D <- matrix(0, nrow = l, ncol = n)
 	D.pos <- matrix(0, nrow = l, ncol = 2)
+	tildelogY <- rep(0, l)
 	tildedelta <- matrix(0, nrow = l, ncol = 2)
 	counter <- 1
 	for(j in 1:(n-1)){
 		for(k in (j+1):n){
 			if(delta[j]!=0 | delta[k]!=0){
 				Theta[counter] <- logY[j] - logY[k]
+				D[counter, j] <- 1
+				D[counter, k] <- -1
 				D.pos[counter, 1] <- j
 				D.pos[counter, 2] <- k
 				tildedelta[counter,] <- c(delta[j], delta[k])
@@ -52,33 +56,34 @@ ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol
 		}
 	}
 	tildelogY <- Theta
-	D.vert.1 <- matrix(0, nrow = n, ncol = n)
-	D.vert.neg1 <- matrix(0, nrow = n, ncol = n)
-	counter.1 <- rep(1, times = n)
-	counter.neg1 <- rep(1, times = n)
-	for (i in 1:l) {
-	  dPos.1 <- D.pos[i,1]
-	  dPos.2 <- D.pos[i,2]
-	  D.vert.1[dPos.1, counter.1[dPos.1]] <- i
-	  D.vert.neg1[dPos.2, counter.neg1[dPos.2]] <- i
-	  counter.1[dPos.1] <- counter.1[dPos.1] + 1
-	  counter.neg1[dPos.2] <- counter.neg1[dPos.2] + 1
-	} 
-	
+	D <- Matrix(D, sparse=TRUE)
 	Gamma  <- -sign(Theta)
 	Beta <- rep(0, p)
-	eta <-  n*(irlba(X,1)$d^2)
+	#ptm <- proc.time()
+	t1 <- as.matrix(tcrossprod(D, t(X)))
+	eta <-  irlba(t1,1)$d^2
+	#proc.time() - ptm
+	t1 <- NULL
 	rho <- 0.1
 
 	BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
 	euc.tildelogY <- sqrt(sum(tildelogY^2))
 
 	for(kk in 1:length(lambda)){
-		out <- ADMM_ENrun(tildelogY, X, D.pos, D.vert.1, D.vert.neg1, tildedelta, rho = rho, eta = eta, tau = 1.5, 
-			lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta, 
-			Theta = Theta, 
-			max_iter = 5000, tol_abs = tol.abs, tol_rel = tol.rel, 
-			gamma = gamma, euc_tildelogY = euc.tildelogY)
+		if(!cpp){
+			out <- ADMM.ENrun(tildelogY, X, D, D.pos, tildedelta, rho = rho, eta = eta, tau = 1.5, 
+				lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta, 
+				Theta = Theta, 
+				max.iter = 5000, tol.abs = tol.abs, tol.rel = tol.rel, 
+				gamma = gamma, euc.tildelogY = euc.tildelogY)
+		} 
+		if(cpp){
+			out <- ADMM_ENrun(tildelogY, X, D, D.pos, tildedelta, rho = rho, eta = eta, tau = 1.5, 
+				lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta, 
+				Theta = Theta, 
+				max_iter = 5000, tol_abs = tol.abs, tol_rel = tol.rel, 
+				gamma = gamma, euc_tildelogY = euc.tildelogY)
+		}
 		BetaOut[,kk] <- out$Beta
 		Beta <- out$Beta
 		Gamma <- out$Gamma

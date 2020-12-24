@@ -23,7 +23,7 @@ penAFT <- function(X, logY, delta,
                    nlambda = 50, 
                    lambda.ratio.min = NULL, lambda = NULL, 
                    penalty = NULL,
-                   alpha = 1, weights = NULL, 
+                   alpha = 1, weight.set = NULL, 
                    groups = NULL, tol.abs = 1e-10, 
                    tol.rel = 5e-4, 
                    gamma = 0, center = TRUE, 
@@ -73,47 +73,52 @@ penAFT <- function(X, logY, delta,
   # -----------------------------------------------------------
   # Get candidate tuning parameters
   # -----------------------------------------------------------
-   EN_TPcalc <- function(X.fit, logY, delta) {
-    n <- nrow(logY)
-    grad <- rep(0, dim(X.fit)[2])
-    grad2 <- rep(0, dim(X.fit)[2])
-    for (i in which(delta==1)) {
-      for (j in 1:n) {
-        if(logY[i] != logY[j]){
-          grad <- grad + delta[i]*(X.fit[i,] - X.fit[j,])*(logY[i] < logY[j])
-        } else {
-          grad2 <- grad2 + delta[i]*abs(X.fit[i,] - X.fit[j,])
-        } 
-      }
-    }
-
-    return(abs(grad)/n^2 + grad2/n^2)
-  }
-
-  gradG <- EN_TPcalc(X.fit, logY, delta)
-
   if (penalty == "EN"){
-    if(is.null(weights)){
+    if(is.null(weight.set)){
       w <- rep(1, p)
     } else {
-      if (is.null(weights$w)) {
+      if (is.null(weight.set$w)) {
         stop("Need to specify both w to use weighted elastic net")
       } else {
-        w <- weights$w
+        w <- weight.set$w
       }
     }
     
     if (is.null(lambda)) {
-      wTemp <- w
-      if(any(wTemp==0)){
-        wTemp[which(wTemp == 0)] <- Inf
+
+      if (alpha != 0) {
+        EN_TPcalc <- function(X.fit, logY, delta) {
+          n <- nrow(logY)
+          grad <- rep(0, dim(X.fit)[2])
+          grad2 <- rep(0, dim(X.fit)[2])
+          for (i in which(delta==1)) {
+            for (j in 1:n) {
+              if(logY[i] != logY[j]){
+                grad <- grad + delta[i]*(X.fit[i,] - X.fit[j,])*(logY[i] < logY[j])
+              } else {
+                grad2 <- grad2 + delta[i]*abs(X.fit[i,] - X.fit[j,])
+              } 
+            }
+          }
+          return(abs(grad)/n^2 + grad2/n^2)
+        }
+
+        gradG <- EN_TPcalc(X.fit, logY, delta)
+
+        wTemp <- w
+        if(any(wTemp==0)){
+          wTemp[which(wTemp == 0)] <- Inf
+        }
+        lambda.max <- max(gradG/wTemp)/alpha + 1e-6
+        if (is.null(lambda.ratio.min)) {
+          lambda.ratio.min <- 0.1
+        }
+        lambda.min <- lambda.ratio.min*lambda.max
+        lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda) 
+      } else {
+        lambda <- 10^seq(-4, 4, length=nlambda)
+        warning("Setting alpha = 0 corresponds to a ridge regression: may need to check candidate tuning parameter values.")
       }
-      lambda.max <- max(gradG/wTemp)/alpha + 1e-6
-      if (is.null(lambda.ratio.min)) {
-        lambda.ratio.min <- 0.1
-      }
-      lambda.min <- lambda.ratio.min*lambda.max
-      lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
       
     } else {
       warning("It is recommended to let tuning parameters be chosen automatically: see documentation.")
@@ -124,27 +129,33 @@ penAFT <- function(X, logY, delta,
     # -----------------------------------------------
     getPath <- ADMM.ENpath(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol.abs, tol.rel, gamma, quiet)
     
-   } else {
-    if (penalty == "SG") {
-      if (is.null(groups)) {
-        stop("To use group-lasso penalty, must specify 'groups'!")
-      } 
-      G <- length(unique(groups))
-      if(is.null(weights)){
-        w <- rep(1, p)
-        v <- rep(1, G)
-      } else {
-        if (is.null(weights$w)) {
-          stop("Need to specify both w and v using weighted group lasso")
-        } else {
-          w <- weights$w
+    } else {
+
+      if (penalty == "SG") {
+
+
+        if(alpha == 1){
+          stop("Need to specify penalty as \"EN\" and set alpha = 1")
         }
-        if (is.null(weights$v)) {
-          stop("Need to specify both w and v using weighted group lasso")
+        if (is.null(groups)) {
+          stop("To use group-lasso penalty, must specify 'groups'!")
+        } 
+        G <- length(unique(groups))
+        if(is.null(weight.set)){
+          w <- rep(1, p)
+          v <- rep(1, G)
         } else {
-          v <- weights$v
+          if (is.null(weight.set$w)) {
+            stop("Need to specify both w and v using weighted group lasso")
+          } else {
+            w <- weight.set$w
+          }
+          if (is.null(weight.set$v)) {
+            stop("Need to specify both w and v using weighted group lasso")
+          } else {
+            v <- weight.set$v
+          }
         }
-      }
       
 
     if (is.null(lambda)) {
@@ -163,22 +174,35 @@ penAFT <- function(X, logY, delta,
 
         grad <- getGrad(X.fit, logY, delta)
 
-        lam.check <- 10^seq(-4, 4, length=500)
-        check.array <- matrix(0, nrow=length(lam.check), ncol=G)
-        for(j in 1:length(lam.check)){
-          for(k in 1:G){
-            t0 <- pmax(abs(grad[which(groups==k)]) - alpha*lam.check[j]*w[which(groups==k)], 0)*sign(grad[which(groups==k)])
-            check.array[j,k] <- sqrt(sum(t0^2)) < v[k]*(1-alpha)*lam.check[j] 
+        if (alpha != 0) {
+          lam.check <- 10^seq(-4, 4, length=500)
+          check.array <- matrix(0, nrow=length(lam.check), ncol=G)
+          for(j in 1:length(lam.check)){
+            for(k in 1:G){
+              t0 <- pmax(abs(grad[which(groups==k)]) - alpha*lam.check[j]*w[which(groups==k)], 0)*sign(grad[which(groups==k)])
+              check.array[j,k] <- sqrt(sum(t0^2)) < v[k]*(1-alpha)*lam.check[j] 
+            }
           }
+
+          lambda.max <- lam.check[min(which(rowSums(check.array) == G))] + 1e-6
+          if (is.null(lambda.ratio.min)) {
+            lambda.ratio.min <- 0.1
+          }
+          lambda.min <- lambda.ratio.min*lambda.max
+          lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
+
+        } else {
+          check.array <- rep(0, length(G))
+          for(k in 1:G){
+            check.array[k] <- sqrt(sum((grad[which(groups==k)])^2))
+          }
+          lambda.max <- max(check.array) + 1e-6
+          if (is.null(lambda.ratio.min)) {
+            lambda.ratio.min <- 0.1
+          }
+          lambda.min <- lambda.ratio.min*lambda.max
+          lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
         }
-
-      lambda.max <- lam.check[min(which(rowSums(check.array) == G))] + 1e-6
-      if (is.null(lambda.ratio.min)) {
-        lambda.ratio.min <- 0.1
-      }
-      lambda.min <- lambda.ratio.min*lambda.max
-      lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
-
       } else {
         stop("Ties present in the input logY!")
       }
@@ -192,7 +216,6 @@ penAFT <- function(X, logY, delta,
       
     }
   }
-  
   
   # --------------------------------------------
   # Append useful info to getpath

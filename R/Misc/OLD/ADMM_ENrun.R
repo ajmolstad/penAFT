@@ -1,10 +1,10 @@
-ADMM.ENrun <- function(tildelogY, X, D, tildedelta, rho, eta, tau, 
+ADMM.ENrun <- function(tildelogY, X, D, D.pos, tildedelta, rho, eta, tau, 
                        lambda, alpha, w, Gamma, Beta, 
                        Theta,  
                        max.iter, tol.abs, tol.rel, gamma, euc.tildelogY){
 
 
-  out <- ADMM_ENrun(tildelogY, X, D, tildedelta, rho, eta, tau, 
+  out <- ADMM_ENrun(tildelogY, X, D, D.pos, tildedelta, rho, eta, tau, 
              lambda, alpha, w, Gamma, Beta, 
              Theta,  
              max.iter, tol.abs, tol.rel, gamma, euc.tildelogY)
