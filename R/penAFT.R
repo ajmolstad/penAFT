@@ -224,6 +224,7 @@ penAFT <- function(X, logY, delta,
   getPath$standardize <- standardize
   getPath$X.mean <- colMeans(X)
   getPath$X.sd <- apply(X, 1, sd)
+  getPath$alpha <- alpha
   
   return(getPath)
 }
