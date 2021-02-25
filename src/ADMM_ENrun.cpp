@@ -110,24 +110,11 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
     {
         lll_counter++;
 
-        // ---------------------------------
-        // Theta update
-        // ---------------------------------
-        tTheta = Theta;
-        double nrho = pow(n, 2 - gamma) * rho;
-        arma::vec t0(tildelogY - tXB - ((1/rho) * Gamma));
-
-        for (unsigned int m = 0; m < l; m++)
-        {
-            Theta(m) = updateThetaEntry(t0(m), tildedelta(m,0), tildedelta(m,1), nrho);
-        }
-
         // -------------------------------------
         // Beta update
         // -------------------------------------
 
-
-        //BetaSp = ((1 / eta) * X_t * (DSp_t * (t0 - Theta))) + BetaSp;
+        arma::vec t0(tildelogY - tXB - ((1/rho) * Gamma));
 
         t0_Theta = t0 - Theta;
 
@@ -177,6 +164,18 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
             ii = D_pos(k, 0) - 1;
             jj = D_pos(k, 1) - 1;
             tXB(k) = XBeta(ii) - XBeta(jj);
+        }
+              
+        // ---------------------------------
+        // Theta update
+        // ---------------------------------
+        tTheta = Theta;
+        double nrho = pow(n, 2 - gamma) * rho;
+        t0 = (tildelogY - tXB - ((1/rho) * Gamma));
+
+        for (unsigned int m = 0; m < l; m++)
+        {
+            Theta(m) = updateThetaEntry(t0(m), tildedelta(m,0), tildedelta(m,1), nrho);
         }
 
         // ----------------------------------

@@ -91,37 +91,12 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
     {
         lll_counter++;
 
-        // ---------------------------------
-        // Theta update
-        // ---------------------------------
-        tTheta = Theta;
-        double nrho = pow(n, 2 - gamma) * rho;
+
+        //------------------------------------------
+        // Beta update
+        // -----------------------------------------
+
         arma::mat t0(tildelogY - tXB - ((1/rho) * Gamma));
-
-        arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) / rho;
-
-        for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) 
-        {
-            if (t0(m) > tildedelta_nrho(m,1)) 
-            {
-                Theta(m) = t0(m) - tildedelta_nrho(m,1);
-            } 
-            else 
-            {
-                if (t0(m) < -tildedelta_nrho(m,0)) 
-                {
-                    Theta(m) = t0(m) + tildedelta_nrho(m,0);
-                }
-                else
-                {
-                    Theta(m) = 0.0;
-                }
-            }
-        }
-
-        outTheta = Theta;
-
-        //BetaPrev = BetaSp;
 
         t0_Theta = t0 - Theta;
 
@@ -182,12 +157,43 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
         }
 
 
+        // ---------------------------------
+        // Theta update
+        // ---------------------------------
+        tTheta = Theta;
+        t0 = (tildelogY - tXB - ((1/rho) * Gamma));
+
+        arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) / rho;
+
+        for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) 
+        {
+            if (t0(m) > tildedelta_nrho(m,1)) 
+            {
+                Theta(m) = t0(m) - tildedelta_nrho(m,1);
+            } 
+            else 
+            {
+                if (t0(m) < -tildedelta_nrho(m,0)) 
+                {
+                    Theta(m) = t0(m) + tildedelta_nrho(m,0);
+                }
+                else
+                {
+                    Theta(m) = 0.0;
+                }
+            }
+        }
+
+        outTheta = Theta;
+
+
         // ----------------------------------
         // Gamma update
         // ----------------------------------
         Gamma = Gamma + tau*rho*(Theta - tildelogY + tXB);
 
         tGamma = Gamma;
+
 
         //-----------------------------------------------------------
         // Step size update and convergence conditions check
