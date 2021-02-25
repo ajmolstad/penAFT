@@ -72,13 +72,9 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
     arma::mat lam((pow(n, gamma)*lambda*alpha*w)/(eta));
     arma::mat lam2((pow(n, gamma)*lambda*(1-alpha)*w)/(eta));
 
-
     unsigned int lll_counter = 0;
 
     arma::sp_mat BetaSp(Beta);
-    //arma::sp_mat DSp(D);
-
-    //arma::sp_mat DSp_t = D.t();
     arma::mat X_t = X.t();
 
     arma::vec tXB(l);
@@ -92,7 +88,8 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
 
     arma::vec D_Gamma(n);
 
-    //arma::mat tXB(DSp * (X * BetaSp));
+    arma::vec t0(l);
+
     int ii = 0;
     int jj = 0;
 
@@ -105,29 +102,15 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
     }
     arma::vec tTheta(l);
 
-
     for (unsigned int lll = 1; lll <= max_iter; lll++)
     {
         lll_counter++;
-
-        // ---------------------------------
-        // Theta update
-        // ---------------------------------
-        tTheta = Theta;
-        double nrho = pow(n, 2 - gamma) * rho;
-        arma::vec t0(tildelogY - tXB - ((1/rho) * Gamma));
-
-        for (unsigned int m = 0; m < l; m++)
-        {
-            Theta(m) = updateThetaEntry(t0(m), tildedelta(m,0), tildedelta(m,1), nrho);
-        }
 
         // -------------------------------------
         // Beta update
         // -------------------------------------
 
-
-        //BetaSp = ((1 / eta) * X_t * (DSp_t * (t0 - Theta))) + BetaSp;
+        t0 = (tildelogY - tXB - ((1/rho) * Gamma));
 
         t0_Theta = t0 - Theta;
 
@@ -170,13 +153,24 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
 
         BetaSp = BetaSp / (1 + (lam2 / rho));
 
-        //tXB = DSp * (X * BetaSp);
         XBeta = X * BetaSp;
         for (unsigned int k = 0; k < l; k++) 
         {
             ii = D_pos(k, 0) - 1;
             jj = D_pos(k, 1) - 1;
             tXB(k) = XBeta(ii) - XBeta(jj);
+        }
+
+        // ---------------------------------
+        // Theta update
+        // ---------------------------------
+        tTheta = Theta;
+        double nrho = pow(n, 2 - gamma) * rho;
+        t0 = (tildelogY - tXB - ((1/rho) * Gamma));
+
+        for (unsigned int m = 0; m < l; m++)
+        {
+            Theta(m) = updateThetaEntry(t0(m), tildedelta(m,0), tildedelta(m,1), nrho);
         }
 
         // ----------------------------------
@@ -217,8 +211,6 @@ List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X,
 
 	    	}
 
-
-            //double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double s = rho * norm(X_t * D_Theta_tTheta, 2);
             double r = norm(Theta - tildelogY + tXB, 2);
 

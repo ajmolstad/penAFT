@@ -38,20 +38,12 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
     double alpha, const arma::vec& w, const arma::vec& v, const arma::vec& borderIndexes, arma::vec Gamma, const arma::vec& Beta, arma::vec Theta, unsigned int max_iter, double tol_abs, double tol_rel, double gamma,
     double euc_tildelogY, unsigned int n, unsigned int l, unsigned int p, int G)
 {
-    //int p = size(X)(1);
-    //int n = size(X)(0);
-    //int l = size(tildelogY)(0);
-
     double updateStep = 1.0;
 
     unsigned int lll_counter = 0;
     arma::sp_mat BetaSp(Beta);
-    //arma::sp_mat DSp(D);
 
-    //arma::sp_mat DSp_t = DSp.t();
     arma::mat X_t = X.t();
-
-    //arma::sp_mat BetaPrev(BetaSp);
 
     arma::vec tTheta(l);
     arma::vec tGamma(l);
@@ -66,14 +58,13 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
 
     arma::vec D_Gamma(n);
 
-    //arma::sp_mat tXB(DSp * (X * BetaSp));
+    arma::vec t0(l);
 
     double lam = (pow(n, gamma)*lambda*alpha) / eta;
 
     arma::vec tXB(l);
     arma::vec XBeta(X * BetaSp);
 
-    //arma::mat tXB(DSp * (X * BetaSp));
     int ii = 0;
     int jj = 0;
 
@@ -91,37 +82,10 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
     {
         lll_counter++;
 
-        // ---------------------------------
-        // Theta update
-        // ---------------------------------
-        tTheta = Theta;
-        //double nrho = pow(n, 2 - gamma) * rho;
-        arma::mat t0(tildelogY - tXB - ((1/rho) * Gamma));
-
-        arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) / rho;
-
-        for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) 
-        {
-            if (t0(m) > tildedelta_nrho(m,1)) 
-            {
-                Theta(m) = t0(m) - tildedelta_nrho(m,1);
-            } 
-            else 
-            {
-                if (t0(m) < -tildedelta_nrho(m,0)) 
-                {
-                    Theta(m) = t0(m) + tildedelta_nrho(m,0);
-                }
-                else
-                {
-                    Theta(m) = 0.0;
-                }
-            }
-        }
-
-        outTheta = Theta;
-
-        //BetaPrev = BetaSp;
+        // --------------------------------
+        // Beta update
+        // --------------------------------
+        t0 = (tildelogY - tXB - ((1/rho) * Gamma));
 
         t0_Theta = t0 - Theta;
 
@@ -182,12 +146,43 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
         }
 
 
+        // ---------------------------------
+        // Theta update
+        // ---------------------------------
+        tTheta = Theta;
+
+        t0 = (tildelogY - tXB - ((1/rho) * Gamma));
+
+        arma::mat tildedelta_nrho = (tildedelta / pow(n, 2 - gamma)) / rho;
+
+        for (unsigned int m = 0; m < tildedelta_nrho.n_rows; m++) 
+        {
+            if (t0(m) > tildedelta_nrho(m,1)) 
+            {
+                Theta(m) = t0(m) - tildedelta_nrho(m,1);
+            } 
+            else 
+            {
+                if (t0(m) < -tildedelta_nrho(m,0)) 
+                {
+                    Theta(m) = t0(m) + tildedelta_nrho(m,0);
+                }
+                else
+                {
+                    Theta(m) = 0.0;
+                }
+            }
+        }
+
+        outTheta = Theta;
+
+
         // ----------------------------------
         // Gamma update
         // ----------------------------------
         Gamma = Gamma + tau*rho*(Theta - tildelogY + tXB);
-
         tGamma = Gamma;
+
 
         //-----------------------------------------------------------
         // Step size update and convergence conditions check
@@ -220,8 +215,6 @@ List ADMM_SGrun(const arma::vec& tildelogY, const arma::mat& X, const arma::mat&
 
             }
 
-
-            //double s = rho * norm(X_t * (DSp_t * (Theta - tTheta)), 2);
             double s = rho * norm(X_t * D_Theta_tTheta, 2);
             double r = norm(Theta - tildelogY + tXB, 2);
 
