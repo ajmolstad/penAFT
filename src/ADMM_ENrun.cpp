@@ -2,7 +2,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-// [[Rcpp::depends("RcppArmadillo")]]
 double updateThetaEntry(double temp, double tildedelta_1, double tildedelta_2, double nrho) {
     double theta_entry = 0;
     if (temp > tildedelta_2 / nrho)
@@ -54,7 +53,6 @@ double absolute(double num) {
 	}
 }
 
-// [[Rcpp::export]]
 List ADMM_ENrun(const arma::vec& tildelogY, const arma::mat& X, 
     const arma::mat& D_pos, const arma::mat& D_vert_1, const arma::mat& D_vert_neg1, const arma::mat& tildedelta, 
     double rho, double eta, double tau, double lambda,

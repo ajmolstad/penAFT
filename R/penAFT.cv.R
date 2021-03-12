@@ -32,10 +32,9 @@ penAFT.cv <- function(X, logY, delta,
                    center = TRUE, 
                    standardize = FALSE,
                    nfolds = 5, 
-                   fold.id = NULL,
+                   cv.index = NULL,
                    admm.max.iter = 1e4, 
-                   quiet = TRUE, 
-                   cpp = TRUE) {
+                   quiet = TRUE) {
                      
   # ----------------------------------------------------------
   # Preliminary checks 
@@ -57,9 +56,9 @@ penAFT.cv <- function(X, logY, delta,
     stop("alpha must be in [0,1]: see documentation.")
   }
   
-  if(length(unique(logY))!=length(logY)){
-    stop("logY contains duplicate survival or censoring times (i.e., ties).")
-  }
+  # if(length(unique(logY))!=length(logY)){
+  #   stop("logY contains duplicate survival or censoring times (i.e., ties).")
+  # }
   
   # -----------------------------------------------------------
   # Center and standardize
@@ -68,7 +67,7 @@ penAFT.cv <- function(X, logY, delta,
     X.fit <- X - tcrossprod(rep(1, n), colMeans(X))
   } 
   if (standardize) {
-    X.fit <- (X - tcrossprod(rep(1, n), colMeans(X)))/(tcrossprod(rep(1, n), apply(X, 1, sd)))
+    X.fit <- (X - tcrossprod(rep(1, n), colMeans(X)))/(tcrossprod(rep(1, n), apply(X, 2, sd)))
   }
   if (!center & !standardize) {
     X.fit <- X
@@ -99,17 +98,19 @@ penAFT.cv <- function(X, logY, delta,
     if (is.null(lambda)) {
       if (alpha != 0) {
         EN_TPcalc <- function(X.fit, logY, delta) {
-          n <- nrow(logY)
+          n <- length(logY)
+          p <- dim(X.fit)[2]
           grad <- rep(0, dim(X.fit)[2])
           grad2 <- rep(0, dim(X.fit)[2])
           for (i in which(delta==1)) {
-            for (j in 1:n) {
-              if(logY[i] != logY[j]){
-                grad <- grad + delta[i]*(X.fit[i,] - X.fit[j,])*(logY[i] < logY[j])
-              } else {
-                grad2 <- grad2 + delta[i]*abs(X.fit[i,] - X.fit[j,])
+              t0 <- which(logY > logY[i])
+              if(length(t0) > 0){
+                grad <- grad + length(t0)*X.fit[i,] - colSums(X.fit[t0,,drop=FALSE])
+              }
+              t1 <- which(logY == logY[i])
+              if(length(t1) > 0){
+                grad2 <- grad2 + colSums(abs(matrix(X.fit[i,], nrow=length(t1), ncol=p, byrow=TRUE) - X.fit[t1,,drop=FALSE]))
               } 
-            }
           }
           return(abs(grad)/n^2 + grad2/n^2)
         }
@@ -118,7 +119,7 @@ penAFT.cv <- function(X, logY, delta,
         if(any(wTemp==0)){
           wTemp[which(wTemp == 0)] <- Inf
         }
-        lambda.max <- max(gradG/wTemp)/alpha + 1e-6
+        lambda.max <- max(gradG/wTemp)/alpha + 1e-4
         if (is.null(lambda.ratio.min)) {
           lambda.ratio.min <- 0.1
         }
@@ -159,11 +160,12 @@ penAFT.cv <- function(X, logY, delta,
 
     cv.index1 <- split(which(delta==1), fold1)
     cv.index0 <- split(which(delta==0), fold0)
-    cv.index <- list()
-    for (ll in 1:nfolds) {
-      cv.index[[ll]] <- c(cv.index1[[ll]],cv.index0[[ll]])
+    if(is.null(cv.index)){
+      cv.index <- list()
+      for (ll in 1:nfolds) {
+        cv.index[[ll]] <- c(cv.index1[[ll]],cv.index0[[ll]])
+      }
     }
-
     preds <- matrix(Inf, nrow = n, ncol = length(lambda))
     cv.err.obj <- matrix(Inf, nrow=nfolds, ncol=length(lambda))
 
@@ -178,8 +180,8 @@ penAFT.cv <- function(X, logY, delta,
         X.test <- X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ]))
       } 
       if (standardize) {
-        X.train.fit <- (X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntrain), apply(X[-cv.index[[k]], ], 1, sd)))
-        X.test <- (X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntest), apply(X[-cv.index[[k]], ], 1, sd)))
+        X.train.fit <- (X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntrain), apply(X[-cv.index[[k]], ], 2, sd)))
+        X.test <- (X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntest), apply(X[-cv.index[[k]], ], 2, sd)))
       }
       if (!center & !standardize) {
         X.train.fit <- X[-cv.index[[k]], ]
@@ -219,36 +221,47 @@ penAFT.cv <- function(X, logY, delta,
         if (is.null(groups)) {
           stop("To use group-lasso penalty, must specify \"groups\"!")
         } 
+        if (alpha == 1) {
+          stop("Need to specify penalty as \"EN\" and set alpha = 1")
+        }
+        
         G <- length(unique(groups))
-        if(is.null(weights)){
+        if(is.null(weight.set)){
           w <- rep(1, p)
           v <- rep(1, G)
         } else {
-          if (is.null(weights$w)) {
+          if (is.null(weight.set$w)) {
             stop("Need to specify both w and v using weighted group lasso")
           } else {
-            w <- weights$w
+            w <- weight.set$w
           }
-          if (is.null(weights$v)) {
+          if (is.null(weight.set$v)) {
             stop("Need to specify both w and v using weighted group lasso")
           } else {
-            v <- weights$v
+            v <- weight.set$v
           }
         }
       
 
     if (is.null(lambda)) {
-      if (length(unique(logY)) == length(logY)) {
+      if (length(unique(logY)) == length(logY) && !any(w == 0) && !any(v == 0)) {
 
         getGrad <- function(X.fit, logY, delta) {
-          n <- nrow(logY)
+          n <- length(logY)
+          p <- dim(X.fit)[2]
           grad <- rep(0, dim(X.fit)[2])
+          grad2 <- rep(0, dim(X.fit)[2])
           for (i in which(delta==1)) {
-            for (j in 1:n) {
-                grad <- grad + delta[i]*(X.fit[i,] - X.fit[j,])*(logY[i] < logY[j])
+              t0 <- which(logY > logY[i])
+              if(length(t0) > 0){
+                grad <- grad + length(t0)*X.fit[i,] - colSums(X.fit[t0,,drop=FALSE])
+              }
+              t1 <- which(logY == logY[i])
+              if(length(t1) > 0){
+                grad2 <- grad2 + colSums(abs(matrix(X.fit[i,], nrow=length(t1), ncol=p, byrow=TRUE) - X.fit[t1,,drop=FALSE]))
               } 
           }
-          return(grad/n^2)
+          return(abs(grad)/n^2 + grad2/n^2)
         }
 
         grad <- getGrad(X.fit, logY, delta)
@@ -262,7 +275,7 @@ penAFT.cv <- function(X, logY, delta,
           }
         }
 
-      lambda.max <- lam.check[min(which(rowSums(check.array) == G))] + 1e-6
+      lambda.max <- lam.check[min(which(rowSums(check.array) == G))] + 1e-4
       if (is.null(lambda.ratio.min)) {
         lambda.ratio.min <- 0.1
       }
@@ -270,7 +283,65 @@ penAFT.cv <- function(X, logY, delta,
       lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
 
       } else {
-        stop("Ties present in the input logY!")
+        
+      	# -------------------------------------------------
+      	# dealing with ties using brute force
+      	# -------------------------------------------------
+      	getGrad <- function(X.fit, logY, delta) {
+          n <- length(logY)
+          p <- dim(X.fit)[2]
+          grad <- rep(0, dim(X.fit)[2])
+          grad2 <- rep(0, dim(X.fit)[2])
+          for (i in which(delta==1)) {
+              t0 <- which(logY > logY[i])
+              if(length(t0) > 0){
+                grad <- grad + length(t0)*X.fit[i,] - colSums(X.fit[t0,,drop=FALSE])
+              }
+              t1 <- which(logY == logY[i])
+              if(length(t1) > 0){
+                grad2 <- grad2 + colSums(abs(matrix(X.fit[i,], nrow=length(t1), ncol=p, byrow=TRUE) - X.fit[t1,,drop=FALSE]))
+              } 
+          }
+          return(abs(grad)/n^2 + grad2/n^2)
+        }
+
+        grad <- getGrad(X.fit, logY, delta)
+
+        lam.check <- 10^seq(-4, 4, length=500)
+        if(any(v == 0)){
+          check.array <- matrix(0, nrow=length(lam.check), ncol=G)
+          for(j in 1:length(lam.check)){
+            for(k in (1:G)[-which(v == 0)]){
+              t0 <- pmax(abs(grad[which(groups==k)]) - alpha*lam.check[j]*w[which(groups==k)], 0)*sign(grad[which(groups==k)])
+              check.array[j,k] <- sqrt(sum(t0^2)) < v[k]*(1-alpha)*lam.check[j] 
+            }
+          }
+          check.array <- check.array[,-which(v == 0)]
+          lambda.max <- 1.5*lam.check[min(which(rowSums(check.array) == length(which(v == 0))))] + 1e-4
+
+          } else {
+            check.array <- matrix(0, nrow=length(lam.check), ncol=G)
+            for(j in 1:length(lam.check)){
+            for(k in (1:G)){
+              t0 <- pmax(abs(grad[which(groups==k)]) - alpha*lam.check[j]*w[which(groups==k)], 0)*sign(grad[which(groups==k)])
+              check.array[j,k] <- sqrt(sum(t0^2)) < v[k]*(1-alpha)*lam.check[j] 
+            }
+          }
+          lambda.max <- 1.5*lam.check[min(which(rowSums(check.array) == G))] + 1e-4
+
+          }
+
+      if (is.null(lambda.ratio.min)) {
+        lambda.ratio.min <- 0.1
+      }
+      lambda.min <- lambda.ratio.min*lambda.max
+      lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
+	    lambda.max <- ADMM.SGpath.candidatelambda(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, v, groups, tol.abs, tol.rel, gamma, quiet)$lambda.max
+	    if (is.null(lambda.ratio.min)) {
+        lambda.ratio.min <- 0.1
+      }
+      lambda.min <- lambda.ratio.min*lambda.max
+      lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
       }
     } else {
       warning("It is recommended to let tuning parameters be chosen automatically: see documentation.")
@@ -303,9 +374,11 @@ penAFT.cv <- function(X, logY, delta,
 
     cv.index1 <- split(which(delta==1), fold1)
     cv.index0 <- split(which(delta==0), fold0)
-    cv.index <- list()
-    for (ll in 1:nfolds) {
-      cv.index[[ll]] <- c(cv.index1[[ll]],cv.index0[[ll]])
+    if(is.null(cv.index)){
+      cv.index <- list()
+      for (ll in 1:nfolds) {
+        cv.index[[ll]] <- c(cv.index1[[ll]],cv.index0[[ll]])
+      }
     }
 
     preds <- matrix(Inf, nrow = n, ncol = length(lambda))
@@ -322,8 +395,8 @@ penAFT.cv <- function(X, logY, delta,
         X.test <- X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ]))
       } 
       if (standardize) {
-        X.train.fit <- (X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntrain), apply(X[-cv.index[[k]], ], 1, sd)))
-        X.test <- (X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntest), apply(X[-cv.index[[k]], ], 1, sd)))
+        X.train.fit <- (X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntrain), apply(X[-cv.index[[k]], ], 2, sd)))
+        X.test <- (X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntest), apply(X[-cv.index[[k]], ], 2, sd)))
       }
       if (!center & !standardize) {
         X.train.fit <- X[-cv.index[[k]], ]
@@ -335,7 +408,7 @@ penAFT.cv <- function(X, logY, delta,
       delta.train <- delta[-cv.index[[k]]]
       delta.test <- delta[cv.index[[k]]]
 
-      cv.getPath <- ADMM.ENpath(X.train.fit, logY.train, delta.train, admm.max.iter, lambda, alpha, w, v, groups, tol.abs, tol.rel, gamma, quiet)
+      cv.getPath <- ADMM.SGpath(X.train.fit, logY.train, delta.train, admm.max.iter, lambda, alpha, w, v, groups, tol.abs, tol.rel, gamma, quiet)
       
       # ----------------------------------------------------------
       # cross-validated linear predictors 
@@ -357,10 +430,22 @@ penAFT.cv <- function(X, logY, delta,
 
     }
   } 
+  
+  getPath$center <- center
+  getPath$standardize <- standardize
+  getPath$X.mean <- colMeans(X)
+  getPath$X.sd <- apply(X, 2, sd)
+  getPath$alpha <- alpha
+  if(penalty=="SG"){
+    getPath$groups <- groups
+  }
 
- 
-  return(list("full.fit" = getPath, 
+  Result <- list("full.fit" = getPath, 
     "cv.err.linPred" = cv.err.linPred,
-    "cv.err.obj" = cv.err.obj))
+    "cv.err.obj" = cv.err.obj,
+    "cv.index" = cv.index)
+  class(Result) <- "penAFT.cv"
+ 
+  return(Result)
   
 }

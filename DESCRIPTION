@@ -1,0 +1,13 @@
+Package: penAFT
+Type: Package
+Title: Fit the regularized Gehan estimator under elastic net and sparse group lasso penalties
+Version: 0.1.0
+Author: Aaron J. Molstad and Piotr M. Suder
+Maintainer: Aaron J. Molstad <amolstad@ufl.edu>
+Description: An R package for fitting the regularized Gehan estimator under elastic net and sparse group lasso penalties. 
+License: GPL (>= 2)
+URL: ajmolstad.github.io/research
+LazyData: TRUE
+Imports: Rcpp, RcppArmadillo, Matrix, ggplot2, irlba
+LinkingTo: Rcpp, RcppArmadillo
+NeedsCompilation: yes
