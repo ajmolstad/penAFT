@@ -1,5 +1,5 @@
 # penAFT
-An R package for fitting semiparametric accelerated failure time models under weighted elastic net and weighted sparse group lasso regularization. 
+An R package for fitting semiparametric accelerated failure time models under weighted elastic net and weighted sparse group lasso penalties. 
 
 # Installation
 penAFT can be loaded directly into R through the the `devtools` package:
