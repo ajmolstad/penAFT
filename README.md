@@ -12,5 +12,5 @@ devtools::install_github("ajmolstad/penAFT")
 Please contact `amolstad@ufl.edu` for citation directions. 
 
 # Usage directions
-See [this document](ajmolstad.github.io/docs/penAFT_Example.html) for details on implementation and usage. 
+See [this document](https://ajmolstad.github.io/docs/penAFT_Example.html) for details on implementation and usage. 
 
