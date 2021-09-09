@@ -4,7 +4,7 @@
 \description{A function to perform cross-validation and compute the solution path for the regularized Gehan estimator.}
 \usage{
 penAFT.cv(X, logY, delta, nlambda = 50, 
-  lambda.ratio.min = NULL, lambda = NULL, 
+  lambda.ratio.min = 0.1, lambda = NULL, 
   penalty = NULL, alpha = 1,weight.set = NULL, 
   groups = NULL, tol.abs = 1e-10, tol.rel = 5e-4, 
   standardize = TRUE, nfolds = 5, cv.index = NULL, 

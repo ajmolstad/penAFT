@@ -21,13 +21,13 @@
 penAFT <- function(X, logY, delta,
                    nlambda = 50,
                    lambda.ratio.min = NULL, 
-                   lambda = NULL,
+                   lambda = 0.1,
                    penalty = NULL,
                    alpha = 1, 
                    weight.set = NULL,
                    groups = NULL, 
-                   tol.abs = 1e-10,
-                   tol.rel = 5e-4,
+                   tol.abs = 1e-8,
+                   tol.rel = 2.5e-4,
                    gamma = 0, 
                    standardize = TRUE,
                    admm.max.iter = 1e4, 
@@ -117,9 +117,6 @@ penAFT <- function(X, logY, delta,
           wTemp[which(wTemp == 0)] <- Inf
         }
         lambda.max <- max(gradG/wTemp)/alpha + 1e-4
-        if (is.null(lambda.ratio.min)) {
-          lambda.ratio.min <- 0.1
-        }
         lambda.min <- lambda.ratio.min*lambda.max
         lambda <- 10^seq(log10(lambda.max), log10(lambda.min), length=nlambda)
       } else {
