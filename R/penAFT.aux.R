@@ -1,11 +1,17 @@
 penAFT.predict <- function(fit, Xnew, lambda = NULL){
 
   if(!is.matrix(Xnew)) {
-    stop("Xnew must be a matrix of dimension n_new x p")
+    if(length(Xnew) == length(fit$X.mean)){
+      Xnew <- matrix(Xnew, nrow=1)
+    } else {
+      stop("Xnew must be a matrix of dimension n_new x p")
+    }
   }
+
   if (class(fit)!="penAFT" & class(fit)!="penAFT.cv") {
     stop("Input 'fit' must be a model fit from penAFT or penAFT.cv")
   }
+
   if (class(fit) == "penAFT") {
     if(is.null(lambda) | !any(fit$lambda == lambda)){
       stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
@@ -13,32 +19,29 @@ penAFT.predict <- function(fit, Xnew, lambda = NULL){
       if(fit$standardize){
         Xpred <- (Xnew - rep(1, dim(Xnew)[1])%*%t(fit$X.mean))/(rep(1, dim(Xnew)[1])%*%t(fit$X.sd))
       } else {
-        if(fit$center){
-          Xpred <- (Xnew - rep(1, dim(Xnew)[1])%*%t(fit$X.mean))
-        } else {
-          Xpred <- Xnew
-        }
+        Xpred <- Xnew
       }
       s <- which(fit$lambda == lambda)
       preds <- Xpred%*%as.matrix(fit$beta[,s])
     }
 
   } else {
-    if(any(fit$full.fit$lambda == lambda)){
-      stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
-    }
+    
     if(is.null(lambda)){
-      s <- which.min(fit$cv.err.linPred)
+      s <- min(which(fit$cv.err.linPred == min(fit$cv.err.linPred)))
+    } else {
+      if(!any(fit$full.fit$lambda == lambda)){
+        stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
+      } else {
+        s <- which(fit$full.fit$lambda == lambda)
+      }
     }
+
     fit <- fit$full.fit
     if(fit$standardize){
       Xpred <- (Xnew - rep(1, dim(Xnew)[1])%*%t(fit$X.mean))/(rep(1, dim(Xnew)[1])%*%t(fit$X.sd))
     } else {
-      if(fit$center){
-        Xpred <- (Xnew - rep(1, dim(Xnew)[1])%*%t(fit$X.mean))
-      } else {
-        Xpred <- Xnew
-      }
+      Xpred <- Xnew
     }
     preds <- Xpred%*%as.matrix(fit$beta[,s])
   }
@@ -58,41 +61,32 @@ penAFT.coef <- function(fit, lambda = NULL){
     } else {
       if(fit$standardize){
         s <- which(fit$lambda == lambda)
-        beta.out <- (fit$X.sd)*as.matrix(fit$beta[,s])
-        warning("Coefficients are for centered predictors!")
+        beta.out <- (1/fit$X.sd)*as.matrix(fit$beta[,s])
       } else {
-        if(fit$center){
-          s <- which(fit$lambda == lambda)
-          beta.out <- as.matrix(fit$beta[,s])
-          warning("Coefficients are for centered predictors!")
-        } else {
-          s <- which(fit$lambda == lambda)
-          beta.out <- as.matrix(fit$beta[,s])
-        }
+        s <- which(fit$lambda == lambda)
+        beta.out <- as.matrix(fit$beta[,s])
       }
     }
 
   } else {
-    if(any(fit$full.fit$lambda == lambda)){
-      stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
-    }
-    if(is.null(lambda)){
-      s <- which.min(fit$cv.err.linPred)
+    
+    if (is.null(lambda)) {
+      s <- min(which(fit$cv.err.linPred == min(fit$cv.err.linPred)))
+    } else {
+      if(!any(fit$full.fit$lambda == lambda)){
+        stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
+      } else {
+        s <- which(fit$full.fit$lambda == lambda)
+      }
     }
     fit <- fit$full.fit
     if(fit$standardize){
-      beta.out <- (fit$X.sd)*as.matrix(fit$beta[,s])
-      warning("Coefficients are for centered predictors!")
+      beta.out <- (1/fit$X.sd)*as.matrix(fit$beta[,s])
     } else {
-      if(fit$center){
-        beta.out <- as.matrix(fit$beta[,s])
-        warning("Coefficients are for centered predictors!")
-      } else {
-        beta.out <- as.matrix(fit$beta[,s])
-      }
+      beta.out <- as.matrix(fit$beta[,s])
     }
   }
-  return(list("beta" = beta.out, "mean.adjustment" = fit$X.mean))
+  return(list("beta" = beta.out))
 
 }
 
@@ -111,6 +105,7 @@ penAFT.plot <- function(fit){
     "ObjErr" = colMeans(fit$cv.err.obj),
     "sesObjErr" = apply(fit$cv.err.obj, 2, sd)/sqrt(dim(fit$cv.err.obj)[1])
   )
+  
   # colors for both y-axes
   t1 <- "dodgerblue3"
   t2 <- "black"
@@ -159,8 +154,11 @@ penAFT.trace <- function(fit, groupNames = NULL){
       "log10lambda" = rep(log10(fit$full.fit$lambda), each = sum(rowSums(abs(out)) != 0)),
       "predictor" = rep(1:sum(rowSums(abs(out)) != 0), length(fit$full.fit$lambda))
     )
-
-    p1 <- ggplot(dat, aes(x=dat$log10lambda, y = dat$values, color=as.factor(dat$predictor))) +
+    values <- dat$values
+    log10lambda <- dat$log10lambda
+    predictor <- dat$predictor
+    
+    p1 <- ggplot(dat, aes(x=log10lambda, y = values, color=as.factor(predictor))) +
       theme_bw() + theme(legend.position="") + ylab(expression(hat(beta)[j])) +
       geom_line() + geom_vline(xintercept = log10(fit$full.fit$lambda)[which.min(fit$cv.err.linPred)], linetype="dotted",
                                color = t1) + geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(dat2$ObjErr - dat2$sesObjErr < min(dat2$ObjErr)))], linetype="dotted",
@@ -202,7 +200,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
 
   Groups <- dat$Groups
   values <- dat$values
-  lambda10lambda <- dat$log10lambda
+  log10lambda <- dat$log10lambda
 
   p1 <- ggplot(dat, aes(x=log10lambda, y = values, color=Groups)) +
     theme_bw() + ylab(expression("||"*hat(beta)[G[g]]*"||"[2])) +

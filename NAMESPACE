@@ -7,10 +7,12 @@ export(penAFT.predict)
 export(penAFT.coef)
 export(penAFT.plot)
 export(penAFT.trace)
+export(genSurvData)
+
 
 import(Rcpp)
 import(RcppArmadillo)
 import(Matrix)
 import(irlba)
 import(ggplot2)
-importFrom("stats", "sd", "var")
+importFrom("stats", "quantile", "rexp", "rlogis", "rnorm",  "sd", "var")

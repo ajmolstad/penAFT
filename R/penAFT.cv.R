@@ -29,8 +29,7 @@ penAFT.cv <- function(X, logY, delta,
                    groups = NULL, 
                    tol.abs = 1e-10, 
                    tol.rel = 5e-4, 
-                   center = TRUE, 
-                   standardize = FALSE,
+                   standardize = TRUE,
                    nfolds = 5, 
                    cv.index = NULL,
                    admm.max.iter = 1e4, 
@@ -63,14 +62,16 @@ penAFT.cv <- function(X, logY, delta,
   # -----------------------------------------------------------
   # Center and standardize
   # -----------------------------------------------------------
-  if (center & !standardize) {
-    X.fit <- X - tcrossprod(rep(1, n), colMeans(X))
-  } 
   if (standardize) {
     X.fit <- (X - tcrossprod(rep(1, n), colMeans(X)))/(tcrossprod(rep(1, n), apply(X, 2, sd)))
   }
-  if (!center & !standardize) {
+  if (!standardize) {
     X.fit <- X
+  }
+  if(!is.null(penalty)){ 
+    if(penalty != "EN" & penalty != "SG"){
+      stop("penalty must either be \"EN\" or \"SG\".")
+    }
   }
 
   if (is.null(penalty)) {
@@ -155,17 +156,32 @@ penAFT.cv <- function(X, logY, delta,
     # --------------------------------------------------------------------
     # Perform cross-validation
     # --------------------------------------------------------------------
+    if(!is.null(cv.index)){
+      if(class(cv.index)!="list"){
+        stop("Input cv.index must be a list!")
+      } else {
+        nfolds <- length(cv.index)
+      }
+    }
+
+
     fold1 <- sample(rep(1:nfolds, length=length(which(delta==1))))
     fold0 <- sample(rep(1:nfolds, length=length(which(delta==0))))
 
     cv.index1 <- split(which(delta==1), fold1)
     cv.index0 <- split(which(delta==0), fold0)
+
     if(is.null(cv.index)){
       cv.index <- list()
       for (ll in 1:nfolds) {
         cv.index[[ll]] <- c(cv.index1[[ll]],cv.index0[[ll]])
       }
+    } 
+
+    if(length(cv.index)!=nfolds){
+      stop("Input cv.index does not match nfolds")
     }
+
     preds <- matrix(Inf, nrow = n, ncol = length(lambda))
     cv.err.obj <- matrix(Inf, nrow=nfolds, ncol=length(lambda))
 
@@ -175,15 +191,11 @@ penAFT.cv <- function(X, logY, delta,
       # -----------------------------------------------------------
       ntrain <- dim(X[-cv.index[[k]],])[1]
       ntest <- length(cv.index[[k]])
-      if (center & !standardize) {
-        X.train.fit <- X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ]))
-        X.test <- X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ]))
-      } 
       if (standardize) {
         X.train.fit <- (X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntrain), apply(X[-cv.index[[k]], ], 2, sd)))
         X.test <- (X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntest), apply(X[-cv.index[[k]], ], 2, sd)))
       }
-      if (!center & !standardize) {
+      if (!standardize) {
         X.train.fit <- X[-cv.index[[k]], ]
         X.test <- X[cv.index[[k]], ]
       }
@@ -222,7 +234,7 @@ penAFT.cv <- function(X, logY, delta,
           stop("To use group-lasso penalty, must specify \"groups\"!")
         } 
         if (alpha == 1) {
-          stop("Need to specify penalty as \"EN\" and set alpha = 1")
+          stop("Penalty \"SG\" with alpha = 1 corresponds to \"EN\" and set alpha = 1; check documentation.")
         }
         
         G <- length(unique(groups))
@@ -390,15 +402,11 @@ penAFT.cv <- function(X, logY, delta,
       # -----------------------------------------------------------
       ntrain <- dim(X[-cv.index[[k]],])[1]
       ntest <- length(cv.index[[k]])
-      if (center & !standardize) {
-        X.train.fit <- X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ]))
-        X.test <- X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ]))
-      } 
       if (standardize) {
         X.train.fit <- (X[-cv.index[[k]], ] - tcrossprod(rep(1, ntrain), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntrain), apply(X[-cv.index[[k]], ], 2, sd)))
         X.test <- (X[cv.index[[k]], ] - tcrossprod(rep(1, ntest), colMeans(X[-cv.index[[k]], ])))/(tcrossprod(rep(1, ntest), apply(X[-cv.index[[k]], ], 2, sd)))
       }
-      if (!center & !standardize) {
+      if (!standardize) {
         X.train.fit <- X[-cv.index[[k]], ]
         X.test <- X[cv.index[[k]], ]
       }
@@ -431,7 +439,6 @@ penAFT.cv <- function(X, logY, delta,
     }
   } 
   
-  getPath$center <- center
   getPath$standardize <- standardize
   getPath$X.mean <- colMeans(X)
   getPath$X.sd <- apply(X, 2, sd)
@@ -443,7 +450,8 @@ penAFT.cv <- function(X, logY, delta,
   Result <- list("full.fit" = getPath, 
     "cv.err.linPred" = cv.err.linPred,
     "cv.err.obj" = cv.err.obj,
-    "cv.index" = cv.index)
+    "cv.index" = cv.index,
+    "lambda.min" = lambda[which.min(cv.err.linPred == min(cv.err.linPred))])
   class(Result) <- "penAFT.cv"
  
   return(Result)
