@@ -20,8 +20,8 @@
 # --------------------------------------------------------------------
 penAFT <- function(X, logY, delta,
                    nlambda = 50,
-                   lambda.ratio.min = NULL, 
-                   lambda = 0.1,
+                   lambda.ratio.min = 0.1, 
+                   lambda = NULL,
                    penalty = NULL,
                    alpha = 1, 
                    weight.set = NULL,
