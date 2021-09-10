@@ -124,7 +124,7 @@ penAFT.plot <- function(fit){
       axis.title.y.right = element_text(color = t2, size=13)) + ggtitle("Cross-validation errors") + xlab(expression(log[10](lambda))) + theme(plot.title = element_text(hjust = 0.5))+
     geom_vline(xintercept = log10(fit$full.fit$lambda)[which.min(fit$cv.err.linPred)], linetype="dotted",
                 color = t1) +
-    geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(ObjErr == min(ObjErr)))], linetype="dotted",
+    geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(ObjErr <= ObjErr + sesObjErr))], linetype="dotted",
                 color = t2)
 
   return(p1)
@@ -172,7 +172,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
         p1 <- ggplot(dat, aes(x=log10lambda, y = values, color=as.factor(predictor))) +
           theme_bw() + theme(legend.position="") + ylab(expression(hat(beta)[j])) +
           geom_line() + geom_vline(xintercept = log10(fit$full.fit$lambda)[which.min(fit$cv.err.linPred)], linetype="dotted",
-                                   color = t1) + geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(dat2$ObjErr == min(dat2$ObjErr)))], linetype="dotted",
+                                   color = t1) + geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(dat2$ObjErr <=  min(dat2$ObjErr + dat2$sesObjErr)))], linetype="dotted",
                                                             color = t2) +  ggtitle("Elastic net trace plot") +
           xlab(expression(log[10](lambda))) + theme(plot.title = element_text(hjust = 0.5))
     } else {
@@ -234,7 +234,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
     p1 <- ggplot(dat, aes(x=log10lambda, y = values, color=Groups)) +
       theme_bw() + ylab(expression("||"*hat(beta)[G[g]]*"||"[2])) +
       geom_line() + geom_vline(xintercept = log10(fit$full.fit$lambda)[which.min(fit$cv.err.linPred)], linetype="dotted",
-                  color = t1) + geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(dat2$ObjErr == min(dat2$ObjErr)))], linetype="dotted",
+                  color = t1) + geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(dat2$ObjErr <= min(dat2$ObjErr + dat2$sesObjErr)))], linetype="dotted",
                   color = t2) +  ggtitle("Group lasso trace plot") +
                   xlab(expression(log[10](lambda))) + theme(plot.title = element_text(hjust = 0.5))
   } else {
