@@ -21,7 +21,7 @@ penAFT.trace(fit, groupNames=NULL)
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- genSurvData(n = 50, p = 100, s = 25, cens.quant = 0.6)
+genData <- genSurvData(n = 50, p = 100, s = 25, mag = 0.5, cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status

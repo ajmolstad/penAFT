@@ -1,4 +1,4 @@
-genSurvData <- function(n, p, s, cens.quant = 0.6){
+genSurvData <- function(n, p, s, mag, cens.quant = 0.6){
 
   # --------------------------------
   # Generate predictors + beta
@@ -13,7 +13,7 @@ genSurvData <- function(n, p, s, cens.quant = 0.6){
   SigmaXSqrt <- eo$vec%*%diag(eo$val^.5)%*%t(eo$vec)
 
   X <- tcrossprod(matrix(rnorm(n*p), nrow=n, ncol=p),SigmaXSqrt)
-  beta <- sample(c(rep(0, p-s), rep(1, s)))
+  beta <- sample(c(rep(0, p-s), rep(mag, s)))*sample(c(-1,1), p, replace = TRUE)
 
   # ------------------------------------------------
   # Generate responses from log-logistic AFT

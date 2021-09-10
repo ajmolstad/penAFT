@@ -3,13 +3,14 @@
 \title{Generate a survival dataset from the log-logistic accelerated failure time model.}
 \description{This is a function for generating synthetic datasets from the log-logistic accelerated failure time model. The purpose of this function is to provide structured data for the examples of the other functions' usage. }
 \usage{
-genSurvData(n, p, s, cens.quant = 0.6)
+genSurvData(n, p, s, mag, cens.quant = 0.6)
 }
 
 \arguments{
 \item{n}{The numer of subjects to be included in the dataset.}
 \item{p}{Dimension of the predictor. Note that the function computes the square-root of a \eqn{p \times p} covariance matrix, so setting \code{p} large may be time-consuming.}
-\item{s}{The number of coefficients of \eqn{\beta} to be set equal to one. All others will be zero.}
+\item{s}{The number of nonzero regression coefficients in \eqn{\beta}.}
+\item{mag}{The magnitude of the \code{s} nonzero regression coefficients. Signs of coefficients are assigned at random.}
 \item{cens.quant}{The quantile of true survival times used to set the mean of the exponential distribution from which censoring times are drawn. Default is 0.6. }
 }
 

@@ -6,7 +6,7 @@
 penAFT.cv(X, logY, delta, nlambda = 50, 
   lambda.ratio.min = 0.1, lambda = NULL, 
   penalty = NULL, alpha = 1,weight.set = NULL, 
-  groups = NULL, tol.abs = 1e-10, tol.rel = 5e-4, 
+  groups = NULL, tol.abs = 1e-8, tol.rel = 2.5e-4, 
   standardize = TRUE, nfolds = 5, cv.index = NULL, 
   admm.max.iter = 1e4,quiet = TRUE)
 }
@@ -56,7 +56,7 @@ The weighted elastic net penalty is defined as
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- genSurvData(n = 50, p = 100, s = 25, cens.quant = 0.6)
+genData <- genSurvData(n = 50, p = 100, s = 25, mag = 0.5,  cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status
