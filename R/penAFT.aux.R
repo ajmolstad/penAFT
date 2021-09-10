@@ -124,7 +124,7 @@ penAFT.plot <- function(fit){
       axis.title.y.right = element_text(color = t2, size=13)) + ggtitle("Cross-validation errors") + xlab(expression(log[10](lambda))) + theme(plot.title = element_text(hjust = 0.5))+
     geom_vline(xintercept = log10(fit$full.fit$lambda)[which.min(fit$cv.err.linPred)], linetype="dotted",
                 color = t1) +
-    geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(ObjErr <= ObjErr + sesObjErr))], linetype="dotted",
+    geom_vline(xintercept = log10(fit$full.fit$lambda)[min(which(ObjErr <= min(ObjErr + sesObjErr)))], linetype="dotted",
                 color = t2)
 
   return(p1)
