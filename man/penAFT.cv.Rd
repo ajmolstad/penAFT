@@ -48,6 +48,22 @@ The weighted elastic net penalty is defined as
   where \eqn{w} is a set of non-negative weights (which can be specified in the \code{weight.set} argument). The weighted sparse group-lasso penalty we consider is
    \deqn{\alpha \| w \circ \beta\|_1 + (1-\alpha)\sum_{l=1}^G v_l\|\beta_{\mathcal{G}_l}\|_2}
    where again, \eqn{w} is a set of non-negative weights and \eqn{v_l} are weights applied to each of the \eqn{G} groups. 
+   
+Next, we define the cross-validation errors. 
+Let \eqn{\mathcal{V}_1, \dots, \mathcal{V}_K} be a random \code{nfolds} = \eqn{K} element partition of \eqn{[n]} (the subjects) with the cardinality of each \eqn{\mathcal{V}_k} (the "kth fold"") approximately equal for \eqn{k = 1, \dots, K}. 
+Let \eqn{{\hat{\beta}}_{\lambda(-\mathcal{V}_k)}} be the solution with tuning parameter \eqn{\lambda} using only data indexed by \eqn{[n] \setminus \{\mathcal{V}_k\}} (i.e., outside the kth fold). Then, definining \eqn{e_i(\beta) := \log y_i - \beta'x_i} for \eqn{i= 1, \dots, n}, we call 
+%\vspace{-10pt}
+\deqn{
+\sum_{k=1}^K \left[\frac{1}{|\mathcal{V}_k|^2}  \sum_{i \in \mathcal{V}_k} \sum_{j \in \mathcal{V}_k} \delta_i \{e_i({\hat{\beta}}_{\lambda(-\mathcal{V}_k)}) - e_{j}({\hat{\beta}}_{\lambda(-\mathcal{V}_k)})\}^{-}\right],
+}
+the cross-validated Gehan loss at \eqn{\lambda} in the \eqn{k}th fold, and refer to the sum over all \code{nfolds} = \eqn{K} folds as the cross-validated Gehan loss. 
+Similarly, letting 
+letting
+\deqn{
+\tilde{e}_i({\hat{\beta}}_\lambda) =  \sum_{k = 1}^K (\log y_i - x_i'{\hat{\beta}}_{\lambda(-\mathcal{V}_k)}) \mathbf{1}(i \in \mathcal{V}_k)} for each \eqn{i \in [n]},
+we call 
+\deqn{\left[\sum_{i = 1}^n \sum_{j = 1}^n \delta_i \{\tilde{e}_i({\hat{\beta}}_\lambda) - \tilde{e}_j({\hat{\beta}}_\lambda)\}^{-}\right]}
+the cross-validated linear predictor score at \eqn{\lambda}.
 }
 
 
