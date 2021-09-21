@@ -8,7 +8,7 @@ penAFT.coef(fit, lambda = NULL)
 
 \arguments{
 \item{fit}{A fitted model from \code{penAFT} or \code{penAFT.cv}.}
-\item{lambda}{The tuning parameter value at which to extract coefficients. If \code{NULL} and \code{fit} is a \code{penAFT.cv} object, will use the tuning parameter value with minimum cross-validation error.}
+\item{lambda}{The tuning parameter value at which to extract coefficients. If \code{NULL} and \code{fit} is a \code{penAFT.cv} object, will use the tuning parameter value with minimum cross-validation linear predictor score.}
 }
 
 \value{

@@ -33,15 +33,15 @@ penAFT.cv(X, logY, delta, nlambda = 50,
 
 \value{
 \item{full.fit}{A model fit with the same output as a model fit using \code{penAFT}. See documentation for \code{penAFT} for more.}
-\item{cv.err.linPred}{A \code{nlambda}-dimensional vector of linear-predictor-based cross-valdiation errors.}
-\item{cv.err.obj}{A \code{nfolds }\eqn{\times}\code{ nlambda} matrix of within-fold cross-valdiation errors.}
+\item{cv.err.linPred}{A \code{nlambda}-dimensional vector of cross-validated linear predictor scores.}
+\item{cv.err.obj}{A \code{nfolds }\eqn{\times}\code{nlambda} matrix of cross-valdiation Gehan losses.}
 \item{cv.index}{A list of length \code{nfolds}. Each element contains the indices for subjects belonging to that particular fold.}
 }
 
  
 \details{
-Given \eqn{(\log(y_1), x_1, \delta_1),\dots,(\log(y_n), x_n, \delta_n)} where for subject \eqn{i} (\eqn{i = 1, \dots, n}), \eqn{y_i} is the minimum of the survival time and censoring time, \eqn{x_i} is a \eqn{p}-dimensional predictor, and \eqn{\delta_i} is the indicator of censoring,  \code{penAFT.cv} performs \code{nfolds} cross-validation for selecting the tuning parameter to be used in the argument minimizing
-\deqn{\frac{1}{n^2}\sum_{i=1}^n \sum_{j=1}^n \delta_i \{ \log(y_i) - \log(y_j) - (x_i - x_j)'\beta \}^{-} + \lambda g(\beta)}
+Given \eqn{(\log y_1 , x_1, \delta_1),\dots,(\log y_n , x_n, \delta_n)} where for subject \eqn{i} (\eqn{i = 1, \dots, n}), \eqn{y_i} is the minimum of the survival time and censoring time, \eqn{x_i} is a \eqn{p}-dimensional predictor, and \eqn{\delta_i} is the indicator of censoring,  \code{penAFT.cv} performs \code{nfolds} cross-validation for selecting the tuning parameter to be used in the argument minimizing
+\deqn{\frac{1}{n^2}\sum_{i=1}^n \sum_{j=1}^n \delta_i \{ \log y_i - \log y_j  - (x_i - x_j)'\beta \}^{-} + \lambda g(\beta)}
 where \eqn{\{a \}^{-} := \max(-a, 0) }, \eqn{\lambda > 0}, and \eqn{g} is either the weighted elastic net penalty (\code{penalty = "EN"}) or weighted sparse group lasso penalty (\code{penalty = "SG"}).
 The weighted elastic net penalty is defined as 
   \deqn{\alpha \| w \circ \beta\|_1 + \frac{(1-\alpha)}{2}\|\beta\|_2^2}

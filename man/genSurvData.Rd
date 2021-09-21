@@ -19,6 +19,18 @@ genSurvData(n, p, s, mag, cens.quant = 0.6)
  This function generates predictors to follow a \eqn{p}-dimensional multivariate normal distribution whose covariance has an AR(1) structure with lag 0.7. Then, log survival times are generated as
  \deqn{\log(T) = X \beta + \epsilon}
  where \eqn{\epsilon} has independent components drawn from a logistic distribution with location parmeter zero and scale parameter two. Then censoring times are drawn from an exponential distribution with mean equal to the quantile \code{cens.quant} of \eqn{T}.
- 
- For example usage, see the example usage of \code{penAFT}. 
+}
+
+\examples{
+# --------------------------------------
+# Generate data  
+# --------------------------------------
+set.seed(1)
+genData <- penAFT::genSurvData(n = 50, p = 100, s = 25, mag = 0.5, cens.quant = 0.6)
+X <- genData$X
+logY <- genData$logY
+delta <- genData$status
+str(X)
+head(logY)
+head(delta)
 }

@@ -8,7 +8,7 @@ penAFT.predict(fit, Xnew, lambda = NULL)
 \arguments{
   \item{fit}{A fitted model from \code{penAFT} or \code{penAFT.cv}.}
   \item{Xnew}{A matrix of dimension \eqn{n_{\rm new} \times p}. Must be a matrix, even if \eqn{n_{\rm new}= 1}.}
-  \item{lambda}{The value of \eqn{\lambda} used to estimate \eqn{\beta}. If \code{NULL} and \code{fit} was obtained using \code{nfolds} non-\code{NULL}, the function will use the tuning parameter which minimized cross-validation error.  }
+  \item{lambda}{The value of \eqn{\lambda} used to estimate \eqn{\beta}. If \code{NULL} and \code{fit} was obtained using \code{nfolds} non-\code{NULL}, the function will use the tuning parameter which minimized cross-validation linear predictor scores.  }
 }
 \value{
   \item{preds}{The matrix of linear predictors: rows correspond to rows of \code{Xnew}.  }

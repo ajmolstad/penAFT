@@ -13,7 +13,7 @@ penAFT.trace(fit, groupNames=NULL)
 
 
 \details{
-	The function \code{penAFT.trace} returns a trace plot for a fitted model obtained from either \code{penAFT} or \code{penAFT.cv}. If the model is fit using the sparse group-lasso penalty, you may provide names for the groups (in order of the integer values specifying the groups). This feature may not be desired if there are a large number of groups, however. The vertical blue line indicates the tuning parameter which minimized cross-validated linear predictor error and the vertical black line indicates the tuning parameter minimized the cross-validated deviance. 
+	The function \code{penAFT.trace} returns a trace plot for a fitted model obtained from either \code{penAFT} or \code{penAFT.cv}. If the model is fit using the sparse group-lasso penalty, you may provide names for the groups (in order of the integer values specifying the groups). This feature may not be desired if there are a large number of groups, however. The vertical blue line indicates the tuning parameter which minimized cross-validated linear predictor scores and the vertical black line indicates the tuning parameter minimizing the cross-validated Gehan loss according to the one-standard error rule. 
 }
 
 \examples{
