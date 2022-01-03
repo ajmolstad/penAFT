@@ -1,7 +1,7 @@
 \name{penAFT-package}
 \alias{penAFT-package}
 \docType{package}
-\title{Fit and tune the penaized Gehan estimator with weighted elastic net or weighted sparse group-lasso penalties.}
+\title{Fit and tune the a semiparameteric accelerated failure time model with weight elastic net or weighted sparse group-lasso penalties.}
 \description{
 This package contains numerous functions related to the penalized Gehan estimator. In particular, the main functions are for solution path computation, cross-validation, prediction, and coefficient extraction. 
 }

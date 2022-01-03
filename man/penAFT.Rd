@@ -1,7 +1,7 @@
 \name{penAFT}
 \alias{penAFT}
-\title{Fit the solution path for the regularized Gehan estimator.}
-\description{A function to fit the solution path for the regularized Gehan estimator.}
+\title{Fit the solution path for the regularized semiparametric accelerated failure time model with weighted elastic net or weighted sparse group lasso penalties.}
+\description{A function to fit the solution path for the regularized semiparametric accelerated failure time model estimator.}
 \usage{
 penAFT(X, logY, delta, nlambda = 50, 
   lambda.ratio.min = 0.1, lambda = NULL, 

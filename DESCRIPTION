@@ -1,13 +1,13 @@
 Package: penAFT
 Type: Package
-Title: Fit the regularized Gehan estimator under elastic net and sparse group lasso penalties
+Title: Fit the Regularized Gehan Estimator with Elastic Net and Sparse Group Lasso Penalties
 Version: 0.2.0
 Author: Aaron J. Molstad and Piotr M. Suder
 Maintainer: Aaron J. Molstad <amolstad@ufl.edu>
-Description: An R package for fitting the regularized Gehan estimator under elastic net and sparse group lasso penalties. 
+Description: The semiparametric accelerated failure time (AFT) model is an attractive alternative to the Cox proportional hazards model. This package provides a suite of functions for fitting one popular estimator of the semiparametric AFT model, the reguarlized Gehan estimator. Specifically, we provide functions for cross-validation, prediction, coefficient extraction, and visualizing both trace plots and cross-validation curves. For further details, please see Suder, P. M. and Molstad, A. J. (2021) <arXiv:2104.01707>.
 License: GPL (>= 2)
 URL: ajmolstad.github.io/research
 LazyData: TRUE
-Imports: Rcpp, RcppArmadillo, Matrix, ggplot2, irlba
+Imports: Rcpp, Matrix, ggplot2, irlba
 LinkingTo: Rcpp, RcppArmadillo
 NeedsCompilation: yes

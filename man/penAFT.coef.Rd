@@ -1,7 +1,7 @@
 \name{penAFT.coef}
 \alias{penAFT.coef}
 \title{Extract regression coefficients from fitted model object}
-\description{A function to extract coefficients along the solution path for the regularized Gehan estimator.}
+\description{A function to extract coefficients along the solution path for the regularized semiparametric acceleratred failure time model estimator.}
 \usage{
 penAFT.coef(fit, lambda = NULL)
 }
@@ -26,7 +26,7 @@ penAFT.coef(fit, lambda = NULL)
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- genSurvData(n = 50, p = 100, s = 25, mag = 0.5, cens.quant = 0.6)
+genData <- genSurvData(n = 50, p = 50, s = 25, mag = 0.5, cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status
@@ -47,43 +47,43 @@ coef.20 <- penAFT.coef(fit, lambda = fit$lambda[20])
 # coef.error <- penAFT.coef(fit, lambda = 10) # throws error
 
 
-# ------------------------------------------
-# Fit elastic net penalized estimator with CV
-# -------------------------------------------
-fit.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
-                   nlambda = 50,
-                   penalty = "EN",
-                   alpha = 1, nfolds = 5)
+## ------------------------------------------
+## Fit elastic net penalized estimator with CV
+## -------------------------------------------
+# fit.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
+#                   nlambda = 50,
+#                   penalty = "EN",
+#                   alpha = 1, nfolds = 5)
 
-# coefficients at lambda minimizing cross-validation error
-coef.cv <- penAFT.coef(fit.cv) 
+## --- coefficients at lambda minimizing cross-validation error
+# coef.cv <- penAFT.coef(fit.cv) 
 
-# coefficients at 10th considered lambda 
-coef.cv10 <- penAFT.coef(fit.cv, lambda = fit.cv$full.fit$lambda[10]) 
+## ---- coefficients at 10th considered lambda 
+# coef.cv10 <- penAFT.coef(fit.cv, lambda = fit.cv$full.fit$lambda[10]) 
 
-# -------------------------------------------
-# Repeat with sparse group lasso without CV
-# -------------------------------------------
-groups <- rep(1:10, each = 10)
-fit.sg <- penAFT(X = X, logY = logY, delta = delta,
-                   nlambda = 50, groups = groups,
-                   penalty = "SG",
-                   alpha = 0.5)
+## -------------------------------------------
+## Repeat with sparse group lasso without CV
+## -------------------------------------------
+# groups <- rep(1:10, each = 10)
+# fit.sg <- penAFT(X = X, logY = logY, delta = delta,
+#                   nlambda = 50, groups = groups,
+#                   penalty = "SG",
+#                   alpha = 0.5)
 
-coef.sg.10 <- penAFT.coef(fit.sg, lambda = fit.sg$lambda[10])
-coef.sg.20 <- penAFT.coef(fit.sg, lambda = fit.sg$lambda[20])
+# coef.sg.10 <- penAFT.coef(fit.sg, lambda = fit.sg$lambda[10])
+# coef.sg.20 <- penAFT.coef(fit.sg, lambda = fit.sg$lambda[20])
 
 
-# -------------------------------------------
-# Finally, fit sparse group lasso with CV
-# -------------------------------------------
-groups <- rep(1:10, each = 10)
-fit.sg.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
-                   nlambda = 50, groups = groups,
-                   penalty = "SG",
-                   alpha = 0.5, nfolds = 5)
+## -------------------------------------------
+## Finally, fit sparse group lasso with CV
+## -------------------------------------------
+# groups <- rep(1:10, each = 10)
+# fit.sg.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
+#                   nlambda = 50, groups = groups,
+#                   penalty = "SG",
+#                   alpha = 0.5, nfolds = 5)
 
-coef.sg.cv <- penAFT.coef(fit.sg.cv)
-coef.sg.cv10 <- penAFT.coef(fit.sg.cv, lambda = fit.sg$full.fit$lambda[20])
+# coef.sg.cv <- penAFT.coef(fit.sg.cv)
+# coef.sg.cv10 <- penAFT.coef(fit.sg.cv, lambda = fit.sg$full.fit$lambda[20])
 
 }

@@ -1,7 +1,7 @@
 \name{penAFT.cv}
 \alias{penAFT.cv}
-\title{Cross-validation function for fitting regularized Gehan estimator}
-\description{A function to perform cross-validation and compute the solution path for the regularized Gehan estimator.}
+\title{Cross-validation function for fitting aregularized semiparametric accelerated failure time model}
+\description{A function to perform cross-validation and compute the solution path for the regularized semiparametric accelerated failure time model estimator.}
 \usage{
 penAFT.cv(X, logY, delta, nlambda = 50, 
   lambda.ratio.min = 0.1, lambda = NULL, 
@@ -72,49 +72,49 @@ the cross-validated linear predictor score at \eqn{\lambda}.
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- genSurvData(n = 50, p = 100, s = 25, mag = 0.5,  cens.quant = 0.6)
+genData <- genSurvData(n = 50, p = 50, s = 25, mag = 0.5,  cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status
-
+p <- dim(X)[2]
 
 # -----------------------------------------------
 # Fit elastic net penalized estimator
 # -----------------------------------------------
 fit.en <- penAFT.cv(X = X, logY = logY, delta = delta,
-                   nlambda = 50, lambda.ratio.min = 0.1,
-                   penalty = "EN", nfolds = 10,
+                   nlambda = 10, lambda.ratio.min = 0.1,
+                   penalty = "EN", nfolds = 5,
                    alpha = 1)
-# coefficients at tuning parameter minimizing cross-valdiation error
+# ---- coefficients at tuning parameter minimizing cross-valdiation error
 coef.en <- penAFT.coef(fit.en)
 
-# predict at 30th tuning parameter from full fit
-Xnew <- matrix(rnorm(10*100), nrow=10)
-predict.en <- penAFT.predict(fit.en, Xnew = Xnew, lambda = fit.en$full.fit$lambda[30])
+# ---- predict at 8th tuning parameter from full fit
+Xnew <- matrix(rnorm(10*p), nrow=10)
+predict.en <- penAFT.predict(fit.en, Xnew = Xnew, lambda = fit.en$full.fit$lambda[8])
 
 
-# -----------------------------------------------
-# Fit sparse group penalized estimator
-# -----------------------------------------------
-groups <- rep(1:5, each = 20)
-fit.sg <- penAFT.cv(X = X, logY = logY, delta = delta,
-                   nlambda = 50, lambda.ratio.min = 0.01,
-                   penalty = "SG", groups = groups, nfolds = 5,
-                   alpha = 0.5)
+## -----------------------------------------------
+## Fit sparse group penalized estimator
+## -----------------------------------------------
+# groups <- rep(1:5, each = 20)
+# fit.sg <- penAFT.cv(X = X, logY = logY, delta = delta,
+#                   nlambda = 50, lambda.ratio.min = 0.01,
+#                   penalty = "SG", groups = groups, nfolds = 5,
+#                   alpha = 0.5)
                    
-# -----------------------------------------------
-# Pass fold indices
-# -----------------------------------------------
-groups <- rep(1:5, each = 20)
-cv.index <- list()
-for(k in 1:5){
-  cv.index[[k]] <- which(rep(1:5, length=50) == k)
-}
-fit.sg.cvIndex <- penAFT.cv(X = X, logY = logY, delta = delta,
-                   nlambda = 50, lambda.ratio.min = 0.01,
-                   penalty = "SG", groups = groups, 
-                   cv.index = cv.index,
-                   alpha = 0.5)
+## -----------------------------------------------
+## Pass fold indices
+## -----------------------------------------------
+# groups <- rep(1:5, each = 20)
+# cv.index <- list()
+# for(k in 1:5){
+#   cv.index[[k]] <- which(rep(1:5, length=50) == k)
+# }
+# fit.sg.cvIndex <- penAFT.cv(X = X, logY = logY, delta = delta,
+#                   nlambda = 50, lambda.ratio.min = 0.01,
+#                   penalty = "SG", groups = groups, 
+#                   cv.index = cv.index,
+#                   alpha = 0.5)
 
 # fit.sg.cvIndex$cv.index  == cv.index
 }

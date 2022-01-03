@@ -1,7 +1,7 @@
 \name{penAFT.plot}
 \alias{penAFT.plot}
 \title{Plot cross-validation curves}
-\description{A function for plotting the cross-validation curves for the regularized Gehan estimator.}
+\description{A function for plotting the cross-validation curves for the regularized semiparametric accelerated failure time model estimator.}
 \usage{
 penAFT.plot(fit)
 }
@@ -16,23 +16,23 @@ penAFT.plot(fit)
 }
 
 \examples{
-# --------------------------------------
-# Generate data  
-# --------------------------------------
-set.seed(1)
-genData <- genSurvData(n = 50, p = 100, s = 25, mag = 0.5, cens.quant = 0.6)
-X <- genData$X
-logY <- genData$logY
-delta <- genData$status
+## --------------------------------------
+## Generate data  
+## --------------------------------------
+# set.seed(1)
+# genData <- genSurvData(n = 50, p = 100, s = 25, mag = 0.5, cens.quant = 0.6)
+# X <- genData$X
+# logY <- genData$logY
+# delta <- genData$status
 
 
-# ------------------------------------------
-# Fit elastic net penalized estimator with CV
-# -------------------------------------------
-fit.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
-                   nlambda = 50,
-                   penalty = "EN", tol.rel= 1e-5,
-                   alpha = 1, nfolds = 5)
+## ------------------------------------------
+## Fit elastic net penalized estimator with CV
+## -------------------------------------------
+# fit.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
+#                   nlambda = 50,
+#                   penalty = "EN", tol.rel= 1e-5,
+#                   alpha = 1, nfolds = 5)
 
 # penAFT.plot(fit.cv)
 
