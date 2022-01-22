@@ -14,6 +14,12 @@ genSurvData(n, p, s, mag, cens.quant = 0.6)
 \item{cens.quant}{The quantile of true survival times used to set the mean of the exponential distribution from which censoring times are drawn. Default is 0.6. }
 }
 
+\value{
+  \item{beta}{The true data generating regression coefficient vector.}
+  \item{logY}{The observed failure times or censoring times on the log scale. }
+  \item{status}{Indicator of censoring; a value of 1 indicates the corresponding component of logY is an observed log failure time and a value of 0 indicates a log censoring time. }
+  \item{Xn}{The \eqn{n \times p} matrix of predictors.}
+}
 
 \details{
  This function generates predictors to follow a \eqn{p}-dimensional multivariate normal distribution whose covariance has an AR(1) structure with lag 0.7. Then, log survival times are generated as
@@ -26,7 +32,7 @@ genSurvData(n, p, s, mag, cens.quant = 0.6)
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- penAFT::genSurvData(n = 50, p = 100, s = 25, mag = 0.5, cens.quant = 0.6)
+genData <- penAFT::genSurvData(n = 50, p = 100, s = 10, mag = 1, cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status

@@ -25,7 +25,7 @@ penAFT.cv(X, logY, delta, nlambda = 50,
   \item{tol.abs}{Absolute convergence tolerance.}
   \item{tol.rel}{Relative convergence tolerance.}
   \item{standardize}{Should predictors be standardized (i.e., scaled to have unit variance) for model fitting?}
-  \item{nfolds}{The number of folds to be used for cross-validation. Default is five.}
+  \item{nfolds}{The number of folds to be used for cross-validation. Default is five. Ten is recommended when sample size is especially small.}
   \item{cv.index}{A list of length \code{nfolds} of indices to be used for cross-validation. This is to be used if trying to perform cross-validation for both \eqn{\alpha} and \eqn{\lambda}. Use with extreme caution: this overwrites \code{nfolds}. }
   \item{admm.max.iter}{Maximum number of ADMM iterations.}
   \item{quiet}{\code{TRUE} or \code{FALSE} variable indicating whether progress should be printed.}
@@ -72,7 +72,7 @@ the cross-validated linear predictor score at \eqn{\lambda}.
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- genSurvData(n = 50, p = 50, s = 25, mag = 0.5,  cens.quant = 0.6)
+genData <- genSurvData(n = 50, p = 50, s = 10, mag = 2,  cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status
@@ -92,30 +92,31 @@ coef.en <- penAFT.coef(fit.en)
 Xnew <- matrix(rnorm(10*p), nrow=10)
 predict.en <- penAFT.predict(fit.en, Xnew = Xnew, lambda = fit.en$full.fit$lambda[8])
 
-
-## -----------------------------------------------
-## Fit sparse group penalized estimator
-## -----------------------------------------------
-# groups <- rep(1:5, each = 20)
-# fit.sg <- penAFT.cv(X = X, logY = logY, delta = delta,
-#                   nlambda = 50, lambda.ratio.min = 0.01,
-#                   penalty = "SG", groups = groups, nfolds = 5,
-#                   alpha = 0.5)
-                   
-## -----------------------------------------------
-## Pass fold indices
-## -----------------------------------------------
-# groups <- rep(1:5, each = 20)
-# cv.index <- list()
-# for(k in 1:5){
-#   cv.index[[k]] <- which(rep(1:5, length=50) == k)
-# }
-# fit.sg.cvIndex <- penAFT.cv(X = X, logY = logY, delta = delta,
-#                   nlambda = 50, lambda.ratio.min = 0.01,
-#                   penalty = "SG", groups = groups, 
-#                   cv.index = cv.index,
-#                   alpha = 0.5)
-
-# fit.sg.cvIndex$cv.index  == cv.index
+\donttest{
+  # -----------------------------------------------
+  # Fit sparse group penalized estimator
+  # -----------------------------------------------
+  groups <- rep(1:5, each = 20)
+  fit.sg <- penAFT.cv(X = X, logY = logY, delta = delta,
+                    nlambda = 50, lambda.ratio.min = 0.01,
+                    penalty = "SG", groups = groups, nfolds = 5,
+                    alpha = 0.5)
+                     
+  # -----------------------------------------------
+  # Pass fold indices
+  # -----------------------------------------------
+  groups <- rep(1:5, each = 20)
+  cv.index <- list()
+  for(k in 1:5){
+    cv.index[[k]] <- which(rep(1:5, length=50) == k)
+  }
+  fit.sg.cvIndex <- penAFT.cv(X = X, logY = logY, delta = delta,
+                    nlambda = 50, lambda.ratio.min = 0.01,
+                    penalty = "SG", groups = groups, 
+                    cv.index = cv.index,
+                    alpha = 0.5)
+  
+  fit.sg.cvIndex$cv.index  == cv.index
+}
 }
   

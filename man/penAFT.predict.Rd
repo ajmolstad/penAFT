@@ -26,7 +26,7 @@ penAFT.predict(fit, Xnew, lambda = NULL)
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- genSurvData(n = 50, p = 50, s = 25, mag = 0.5, cens.quant = 0.6)
+genData <- genSurvData(n = 50, p = 50, s = 10, mag = 2, cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status
@@ -46,37 +46,37 @@ fit <- penAFT(X = X, logY = logY, delta = delta,
 # predict at 10th candidate tuning parameter
 linPred.10 <- penAFT.predict(fit, Xnew = Xnew, lambda = fit$lambda[10])
 
+\donttest{
+  # ------------------------------------------
+  # Fit elastic net penalized estimator with CV
+  # -------------------------------------------
+  fit.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
+                    nlambda = 50,
+                    penalty = "EN",
+                     alpha = 1, nfolds = 5)
+  
+  # --- return linear predictor at lambda minimizing cross-validation error 
+  linPred.cv <- penAFT.predict(fit.cv, Xnew = Xnew) 
+  
+  # --- predict at 10th candidate tuning parameter
+  linPred.cv10 <- penAFT.predict(fit.cv, Xnew = Xnew, lambda = fit.cv$full.fit$lambda[10]) 
+  
+  
+  # ------------------------------------------
+  # Fit penAFT with cross-validation
+  # -------------------------------------------
+  groups <- rep(1:5, each = 20)
+  fit.sg.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
+                    nlambda = 50, groups = groups,
+                    penalty = "SG",
+                    alpha = 0.5, nfolds = 5)
+  
+  # ---- return linear predictor at lambda minimizing cross-validation error 
+  linPred.sg.cv <- penAFT.predict(fit.sg.cv, Xnew = Xnew) 
+  
+  # --- predict at 10th candidate tuning parameter
+  linPred.sg.cv10 <- penAFT.predict(fit.sg.cv, Xnew = Xnew, lambda = fit.sg.cv$full.fit$lambda[10]) 
 
-## ------------------------------------------
-## Fit elastic net penalized estimator with CV
-## -------------------------------------------
-# fit.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
-#                   nlambda = 50,
-#                   penalty = "EN",
-#                   alpha = 1, nfolds = 5)
-
-## --- return linear predictor at lambda minimizing cross-validation error 
-# linPred.cv <- penAFT.predict(fit.cv, Xnew = Xnew) 
-
-## --- predict at 10th candidate tuning parameter
-# linPred.cv10 <- penAFT.predict(fit.cv, Xnew = Xnew, lambda = fit.cv$full.fit$lambda[10]) 
-
-
-## ------------------------------------------
-## Fit penAFT with cross-validation
-## -------------------------------------------
-# groups <- rep(1:5, each = 20)
-# fit.sg.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
-#                   nlambda = 50, groups = groups,
-#                   penalty = "SG",
-#                   alpha = 0.5, nfolds = 5)
-
-## ---- return linear predictor at lambda minimizing cross-validation error 
-# linPred.sg.cv <- penAFT.predict(fit.sg.cv, Xnew = Xnew) 
-
-## --- predict at 10th candidate tuning parameter
-# linPred.sg.cv10 <- penAFT.predict(fit.sg.cv, Xnew = Xnew, lambda = fit.sg.cv$full.fit$lambda[10]) 
-
-
+}
 
 }

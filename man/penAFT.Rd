@@ -56,7 +56,7 @@ The weighted elastic net penalty is defined as
 # Generate data  
 # --------------------------------------
 set.seed(1)
-genData <- genSurvData(n = 50, p = 100, s = 25, mag = 0.5, cens.quant = 0.6)
+genData <- genSurvData(n = 50, p = 50, s = 10, mag = 2, cens.quant = 0.6)
 X <- genData$X
 logY <- genData$logY
 delta <- genData$status
@@ -73,10 +73,11 @@ fit.en <- penAFT(X = X, logY = logY, delta = delta,
 
 coef.en.10 <- penAFT.coef(fit.en, lambda = fit.en$lambda[10])
 
+\donttest{
 # ------------------------------------------------
 # Fit weighted elastic net penalized estimator
 # ------------------------------------------------
-weight.set <- list("w" = c(0, 0, rep(1, 98)))
+weight.set <- list("w" = c(0, 0, rep(1, 48)))
 fit.weighted.en <- penAFT(X = X, logY = logY, delta = delta,
                    nlambda = 50, weight.set = weight.set,
                    penalty = "EN",
@@ -96,7 +97,7 @@ fit.ridge <- penAFT(X = X, logY = logY, delta = delta,
 # -----------------------------------------------
 # Fit sparse group penalized estimator
 # -----------------------------------------------
-groups <- rep(1:5, each = 20)
+groups <- rep(1:5, each = 10)
 fit.sg <- penAFT(X = X, logY = logY, delta = delta,
                    nlambda = 50, lambda.ratio.min = 0.01,
                    penalty = "SG", groups = groups, 
@@ -105,8 +106,8 @@ fit.sg <- penAFT(X = X, logY = logY, delta = delta,
 # -----------------------------------------------
 # Fit weighted sparse group penalized estimator
 # -----------------------------------------------
-groups <- rep(1:5, each = 20)
-weight.set <- list("w" = c(0, 0, rep(1, 98)), 
+groups <- rep(1:5, each = 10)
+weight.set <- list("w" = c(0, 0, rep(1, 48)), 
       "v" = 1:5)
 fit.weighted.sg <- penAFT(X = X, logY = logY, delta = delta,
                    nlambda = 100, 
@@ -115,5 +116,5 @@ fit.weighted.sg <- penAFT(X = X, logY = logY, delta = delta,
                    alpha = 0.5)
 
 coef.weighted.sg.20 <- penAFT.coef(fit.weighted.sg, lambda = fit.weighted.sg$lambda[20])
-
+}
 }
