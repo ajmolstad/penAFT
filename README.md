@@ -9,7 +9,8 @@ library(devtools)
 devtools::install_github("ajmolstad/penAFT")
 ```
 # Citation
-Please contact `amolstad@ufl.edu` for citation directions. 
+If you use this package, please cite: 
+Suder, P. M., and Molstad, A. J. (2022+) Scalable algorithms for semiparametric accelerated failure time models in high dimensions. To appear in Statistics in Medicine. DOI: 10.1002/sim.9264
 
 # Usage directions
 See [this document](https://ajmolstad.github.io/docs/penAFT_Example.html) for details on implementation and usage. 
