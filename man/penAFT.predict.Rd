@@ -65,7 +65,7 @@ linPred.10 <- penAFT.predict(fit, Xnew = Xnew, lambda = fit$lambda[10])
   # ------------------------------------------
   # Fit penAFT with cross-validation
   # -------------------------------------------
-  groups <- rep(1:5, each = 20)
+  groups <- rep(1:5, each = 10)
   fit.sg.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
                     nlambda = 50, groups = groups,
                     penalty = "SG",

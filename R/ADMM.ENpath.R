@@ -1,14 +1,14 @@
 ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol.abs, tol.rel, gamma, quiet){
   
-  	# -------------------------------------
+  # -------------------------------------
 	# Objective function evaluator 
 	# -------------------------------------
-	eval.obj <- function(logY, XB, beta, delta, lambda){
+	eval.obj <- function(logY, XB, beta, delta, lambda) {
 		out <- 0 
 		n <- length(logY)
 		E <- logY - XB
-		for(i in which(delta==1)){
-			for(j in 1:n){
+		for (i in which(delta==1)) {
+			for (j in 1:n) {
 				out <- out + max(E[j] - E[i], 0)
 			}
 		}
@@ -27,9 +27,9 @@ ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol
 	# Get initial values
 	# --------------------------------
 	l <- 1
-	for(j in 1:(n-1)){
-		for(k in (j+1):n){
-			if(delta[j]!=0 | delta[k]!=0){
+	for (j in 1:(n-1)) {
+		for (k in (j+1):n) {
+			if (delta[j]!=0 | delta[k]!=0) {
 				l <- l + 1
 			}
 		}
@@ -40,9 +40,9 @@ ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol
 	D.pos <- matrix(0, nrow = l, ncol = 2)
 	tildedelta <- matrix(0, nrow = l, ncol = 2)
 	counter <- 1
-	for(j in 1:(n-1)){
-		for(k in (j+1):n){
-			if(delta[j]!=0 | delta[k]!=0){
+	for (j in 1:(n-1)) {
+		for (k in (j+1):n) {
+			if (delta[j]!=0 | delta[k]!=0) {
 				Theta[counter] <- logY[j] - logY[k]
 				D.pos[counter, 1] <- j
 				D.pos[counter, 2] <- k
@@ -73,7 +73,7 @@ ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol
 	BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
 	euc.tildelogY <- sqrt(sum(tildelogY^2))
 
-	for(kk in 1:length(lambda)){
+	for (kk in 1:length(lambda)) {
 		out <- ADMM_ENrun(tildelogY, X, D.pos, D.vert.1, D.vert.neg1, tildedelta, rho = rho, eta = eta, tau = 1.5, 
 			lambda = lambda[kk], alpha = alpha, w = w, Gamma = Gamma, Beta = Beta, 
 			Theta = Theta, 
@@ -91,5 +91,5 @@ ADMM.ENpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, tol
 
 
 	result <- list("beta" = BetaOut, "lambda" = lambda)
-
+	return(result)
 }

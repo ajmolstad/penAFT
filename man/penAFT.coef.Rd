@@ -64,7 +64,7 @@ coef.20 <- penAFT.coef(fit, lambda = fit$lambda[20])
   # -------------------------------------------
   # Repeat with sparse group lasso without CV
   # -------------------------------------------
-  groups <- rep(1:10, each = 10)
+  groups <- rep(1:10, each = 5)
   fit.sg <- penAFT(X = X, logY = logY, delta = delta,
                    nlambda = 50, groups = groups,
                    penalty = "SG",
@@ -77,7 +77,7 @@ coef.20 <- penAFT.coef(fit, lambda = fit$lambda[20])
   # -------------------------------------------
   # Finally, fit sparse group lasso with CV
   # -------------------------------------------
-  groups <- rep(1:10, each = 10)
+  groups <- rep(1:10, each = 5)
   fit.sg.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
                    nlambda = 50, groups = groups,
                    penalty = "SG",

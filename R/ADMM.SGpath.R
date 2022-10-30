@@ -38,9 +38,9 @@ ADMM.SGpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, v, 
   # Get initial values
   # --------------------------------
   l <- 1
-  for(j in 1:(n-1)){
-    for(k in (j+1):n){
-      if(delta[j]!=0 | delta[k]!=0){
+  for (j in 1:(n-1)) {
+    for (k in (j+1):n) {
+      if (delta[j]!=0 | delta[k]!=0) {
         l <- l + 1
       }
     }
@@ -48,18 +48,15 @@ ADMM.SGpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, v, 
   l <- l - 1
   
   Theta <- rep(0, l)
-  #D <- matrix(0, nrow=l, ncol=n)
   
   D.pos <- matrix(0, nrow = l, ncol = 2)
   tildelogY <- rep(0, l)
   tildedelta <- matrix(0, nrow = l, ncol = 2)
   counter <- 1
-  for(j in 1:(n-1)){
-    for(k in (j+1):n){
-      if(delta[j]!=0 | delta[k]!=0){
+  for (j in 1:(n-1)) {
+    for (k in (j+1):n) {
+      if (delta[j]!=0 | delta[k]!=0) {
         Theta[counter] <- logY[j] - logY[k]
-        #D[counter, j] <- 1
-        #D[counter, k] <- -1
         
         D.pos[counter, 1] <- j
         D.pos[counter, 2] <- k
@@ -89,19 +86,17 @@ ADMM.SGpath <- function(X.fit, logY, delta, admm.max.iter, lambda, alpha, w, v, 
   } 
   
   
-  #D <- Matrix(D, sparse=TRUE)
   Gamma  <- -sign(Theta)
   Beta <- rep(0, p)
   
   eta <- n*max(svd(X)$d)^2
 
   Xbeta <- crossprod(t(X), Beta)
-  #tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
   rho <- 1.5
   BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
   euc.tildelogY <- sqrt(sum(tildelogY^2))
   
-  for(kk in 1:length(lambda)){
+  for (kk in 1:length(lambda)) {
     out <- ADMM_SGrun(tildelogY, X, D.pos, D.vert.1, D.vert.neg1, tildedelta, rho = rho, eta = eta, tau = 1.5, 
                       lambda = lambda[kk], alpha = alpha, w = w, v = v, borderIndexes = border.indexes, Gamma = Gamma, Beta = Beta, 
                       Theta = Theta, 
@@ -178,28 +173,24 @@ ADMM.SGpath.candidatelambda <- function(X.fit, logY, delta, admm.max.iter, lambd
   # Get initial values
   # --------------------------------
   l <- 1
-  for(j in 1:(n-1)){
-    for(k in (j+1):n){
-      if(delta[j]!=0 | delta[k]!=0){
+  for (j in 1:(n-1)) {
+    for (k in (j+1):n) {
+      if (delta[j]!=0 | delta[k]!=0) {
         l <- l + 1
       }
     }
   }
   l <- l - 1
   
-  Theta <- rep(0, l)
-  #D <- matrix(0, nrow=l, ncol=n)
-  
+  Theta <- rep(0, l)  
   D.pos <- matrix(0, nrow = l, ncol = 2)
   tildelogY <- rep(0, l)
   tildedelta <- matrix(0, nrow = l, ncol = 2)
   counter <- 1
-  for(j in 1:(n-1)){
-    for(k in (j+1):n){
-      if(delta[j]!=0 | delta[k]!=0){
+  for (j in 1:(n-1)) {
+    for (k in (j+1):n) {
+      if (delta[j]!=0 | delta[k]!=0) {
         Theta[counter] <- logY[j] - logY[k]
-        #D[counter, j] <- 1
-        #D[counter, k] <- -1
         
         D.pos[counter, 1] <- j
         D.pos[counter, 2] <- k
@@ -229,19 +220,17 @@ ADMM.SGpath.candidatelambda <- function(X.fit, logY, delta, admm.max.iter, lambd
   } 
   
   
-  #D <- Matrix(D, sparse=TRUE)
   Gamma  <- -sign(Theta)
   Beta <- rep(0, p)
   
   eta <- n*max(svd(X)$d)^2
 
   Xbeta <- crossprod(t(X), Beta)
-  #tXB <-  crossprod(t(crossprod(t(D), X)), Beta)
   rho <- 1.5
   BetaOut <- Matrix(0, nrow=p, ncol=length(lambda), sparse=TRUE)
   euc.tildelogY <- sqrt(sum(tildelogY^2))
   
-  for(kk in 1:length(lambda)){
+  for (kk in 1:length(lambda)) {
     out <- ADMM_SGrun(tildelogY, X, D.pos, D.vert.1, D.vert.neg1, tildedelta, rho = rho, eta = eta, tau = 1.5, 
                       lambda = lambda[kk], alpha = alpha, w = w, v = v, borderIndexes = border.indexes, Gamma = Gamma, Beta = Beta, 
                       Theta = Theta, 
@@ -254,8 +243,8 @@ ADMM.SGpath.candidatelambda <- function(X.fit, logY, delta, admm.max.iter, lambd
     Beta.data.unsorted <- Beta.data[order(Beta.data$indices),]
     BetaOut[,kk] <- Beta.data.unsorted$Beta
 
-    if(kk > 1){
-      if(sum(out$Beta[which(w!=0)]!=0) > 0){
+    if (kk > 1) {
+      if (sum(out$Beta[which(w!=0)]!=0) > 0) {
         lambda.max.return <- lambda[kk-1]
         break
       }

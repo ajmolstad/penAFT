@@ -32,7 +32,7 @@ delta <- genData$status
 # Fit elastic net penalized estimator with CV
 # -------------------------------------------
 fit.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
-                   nlambda = 10, tol.rel= 1e-5,
+                   nlambda = 10,
                    penalty = "EN",
                    alpha = 1, nfolds = 5)
 
@@ -43,7 +43,7 @@ penAFT.trace(fit.cv)
   # ------------------------------------------
   # Fit sparse group-lasso estimator with CV
   # -------------------------------------------
-  groups <- rep(1:5, length=100)
+  groups <- rep(1:5, length=10)
   fit.sg.cv <- penAFT.cv(X = X, logY = logY, delta = delta,
                     nlambda = 50, groups = groups,
                     penalty = "SG", tol.rel= 1e-5,

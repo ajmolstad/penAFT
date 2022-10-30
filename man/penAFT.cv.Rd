@@ -96,7 +96,7 @@ predict.en <- penAFT.predict(fit.en, Xnew = Xnew, lambda = fit.en$full.fit$lambd
   # -----------------------------------------------
   # Fit sparse group penalized estimator
   # -----------------------------------------------
-  groups <- rep(1:5, each = 20)
+  groups <- rep(1:5, each = 10)
   fit.sg <- penAFT.cv(X = X, logY = logY, delta = delta,
                     nlambda = 50, lambda.ratio.min = 0.01,
                     penalty = "SG", groups = groups, nfolds = 5,
@@ -105,7 +105,7 @@ predict.en <- penAFT.predict(fit.en, Xnew = Xnew, lambda = fit.en$full.fit$lambd
   # -----------------------------------------------
   # Pass fold indices
   # -----------------------------------------------
-  groups <- rep(1:5, each = 20)
+  groups <- rep(1:5, each = 10)
   cv.index <- list()
   for(k in 1:5){
     cv.index[[k]] <- which(rep(1:5, length=50) == k)
@@ -115,8 +115,8 @@ predict.en <- penAFT.predict(fit.en, Xnew = Xnew, lambda = fit.en$full.fit$lambd
                     penalty = "SG", groups = groups, 
                     cv.index = cv.index,
                     alpha = 0.5)
-  
-  fit.sg.cvIndex$cv.index  == cv.index
+  # --- compare cv indices
+  \dontrun{fit.sg.cvIndex$cv.index  == cv.index}
 }
 }
   
