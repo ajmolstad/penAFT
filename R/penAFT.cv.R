@@ -448,7 +448,7 @@ penAFT.cv <- function(X, logY, delta,
     "cv.err.linPred" = cv.err.linPred,
     "cv.err.obj" = cv.err.obj,
     "cv.index" = cv.index,
-    "lambda.min" = lambda[which.min(cv.err.linPred == min(cv.err.linPred))])
+    "lambda.min" = lambda[which.min(cv.err.linPred)])
   class(Result) <- "penAFT.cv"
  
   return(Result)
