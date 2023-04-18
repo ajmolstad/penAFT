@@ -8,11 +8,11 @@ penAFT.predict <- function(fit, Xnew, lambda = NULL){
     }
   }
 
-  if (class(fit)!="penAFT" & class(fit)!="penAFT.cv") {
+  if (!inherits(fit, "penAFT") & !inherits(fit, "penAFT.cv")) {
     stop("Input 'fit' must be a model fit from penAFT or penAFT.cv")
   }
 
-  if (class(fit) == "penAFT") {
+  if (inherits(fit, "penAFT")) {
     if(is.null(lambda) | !any(fit$lambda == lambda)){
       stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
     } else {
@@ -52,10 +52,10 @@ penAFT.predict <- function(fit, Xnew, lambda = NULL){
 
 penAFT.coef <- function(fit, lambda = NULL){
 
-  if (class(fit)!="penAFT" & class(fit)!="penAFT.cv") {
+  if (!inherits(fit, "penAFT") & !inherits(fit, "penAFT.cv")) {
     stop("Input 'fit' must be a model fit from penAFT or penAFT.cv")
   }
-  if (class(fit) == "penAFT") {
+  if (inherits(fit, "penAFT")) {
     if(is.null(lambda) | !any(fit$lambda == lambda)){
       stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
     } else {
@@ -95,7 +95,7 @@ penAFT.coef <- function(fit, lambda = NULL){
 
 penAFT.plot <- function(fit){
 
-  if(class(fit)!="penAFT.cv"){
+  if(!inherits(fit, "penAFT.cv")){
     stop("Input 'fit' must be a model fit using penAFT.cv.")
   }
 
@@ -137,11 +137,11 @@ penAFT.plot <- function(fit){
 
 penAFT.trace <- function(fit, groupNames = NULL){
   
-  if(class(fit)!="penAFT.cv" & class(fit)!="penAFT"){
+  if(!inherits(fit, "penAFT.cv") & !inherits(fit, "penAFT")){
     stop("Input 'fit' must be a model fit using penAFT.cv or penAFT.")
   }
   
-  if(class(fit) == "penAFT"){
+  if(inherits(fit, "penAFT")){
     fit$full.fit <- fit
   }
 
@@ -152,7 +152,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
     t1 <- "dodgerblue3"
     t2 <- "black"
     
-    if(class(fit) == "penAFT.cv"){
+    if(inherits(fit, "penAFT.cv"){
       out <- as.matrix(fit$full.fit$beta)
         dat2 <- data.frame(
           "log10lambda" = log10(fit$full.fit$lambda),
@@ -204,7 +204,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
     }
   }
 
-  if(class(fit) == "penAFT.cv"){
+  if(inherits(fit, "penAFT.cv"){
     dat2 <- data.frame(
       "log10lambda" = log10(fit$full.fit$lambda),
       "linPred" = fit$cv.err.linPred,
