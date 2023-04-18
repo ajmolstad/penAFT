@@ -154,7 +154,7 @@ penAFT.cv <- function(X, logY, delta,
     # Perform cross-validation
     # --------------------------------------------------------------------
     if(!is.null(cv.index)){
-      if(!inherits(cv.index, "list")){
+      if(!is.list(cv.index)){
         stop("Input cv.index must be a list!")
       } else {
         nfolds <- length(cv.index)
