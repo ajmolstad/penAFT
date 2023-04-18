@@ -59,7 +59,7 @@ penAFT.coef <- function(fit, lambda = NULL){
     if(is.null(lambda) | !any(fit$lambda == lambda)){
       stop("Must supply input 'lambda' equal to element of penAFT$lambda, or use penAFT.cv for model fitting.")
     } else {
-      if(fit$standardize){
+      if (fit$standardize) {
         s <- which(fit$lambda == lambda)
         beta.out <- (1/fit$X.sd)*as.matrix(fit$beta[,s])
       } else {
@@ -80,7 +80,7 @@ penAFT.coef <- function(fit, lambda = NULL){
       }
     }
     fit <- fit$full.fit
-    if(fit$standardize){
+    if (fit$standardize) {
       beta.out <- (1/fit$X.sd)*as.matrix(fit$beta[,s])
     } else {
       beta.out <- as.matrix(fit$beta[,s])
@@ -95,7 +95,7 @@ penAFT.coef <- function(fit, lambda = NULL){
 
 penAFT.plot <- function(fit){
 
-  if(!inherits(fit, "penAFT.cv")){
+  if (!inherits(fit, "penAFT.cv")) {
     stop("Input 'fit' must be a model fit using penAFT.cv.")
   }
 
@@ -141,7 +141,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
     stop("Input 'fit' must be a model fit using penAFT.cv or penAFT.")
   }
   
-  if(inherits(fit, "penAFT")){
+  if (inherits(fit, "penAFT")) {
     fit$full.fit <- fit
   }
 
@@ -204,7 +204,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
     }
   }
 
-  if(inherits(fit, "penAFT.cv"){
+  if (inherits(fit, "penAFT.cv")) {
     dat2 <- data.frame(
       "log10lambda" = log10(fit$full.fit$lambda),
       "linPred" = fit$cv.err.linPred,
