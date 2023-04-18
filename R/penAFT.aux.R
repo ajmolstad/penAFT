@@ -152,7 +152,7 @@ penAFT.trace <- function(fit, groupNames = NULL){
     t1 <- "dodgerblue3"
     t2 <- "black"
     
-    if(inherits(fit, "penAFT.cv"){
+    if(inherits(fit, "penAFT.cv")){
       out <- as.matrix(fit$full.fit$beta)
         dat2 <- data.frame(
           "log10lambda" = log10(fit$full.fit$lambda),
