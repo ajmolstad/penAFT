@@ -1,6 +1,6 @@
 \name{penAFT.predict}
 \alias{penAFT.predict}
-\title{Obtain linear predictor for new subjects using fitted model from \code{penAFT} of \code{penAFT.cv}}
+\title{Obtain linear predictor for new subjects using fitted model from \code{penAFT} or \code{penAFT.cv}}
 \description{A function for prediction along the solution path of the regularized semiparametric accelerated failure time model estimator.}
 \usage{
 penAFT.predict(fit, Xnew, lambda = NULL)
