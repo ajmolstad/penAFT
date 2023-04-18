@@ -1,6 +1,6 @@
 \name{penAFT.cv}
 \alias{penAFT.cv}
-\title{Cross-validation function for fitting aregularized semiparametric accelerated failure time model}
+\title{Cross-validation function for fitting a regularized semiparametric accelerated failure time model}
 \description{A function to perform cross-validation and compute the solution path for the regularized semiparametric accelerated failure time model estimator.}
 \usage{
 penAFT.cv(X, logY, delta, nlambda = 50, 
