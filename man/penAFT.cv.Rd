@@ -16,7 +16,7 @@ penAFT.cv(X, logY, delta, nlambda = 50,
   \item{logY}{An \eqn{n}-dimensional vector of log-survival or log-censoring times.}
   \item{delta}{An \eqn{n}-dimensional binary vector indicating whether the \eqn{j}th component of \code{logY} is an observed log-survival time (\eqn{\delta_j = 1}) or a log-censoring time (\eqn{\delta_j = 0}) for \eqn{j=1, \dots, n}.}
   \item{nlambda}{The number of candidate tuning parameters to consider.}
-  \item{lambda.ratio.min}{The ratio of maximum to minimum candidate tuning parameter value. As a default, we suggest 0.1, but standard model selection procedures should be applied to select \eqn{\lambda}.}
+  \item{lambda.ratio.min}{The ratio of minimum to maximum candidate tuning parameter value. As a default, we suggest 0.1, but standard model selection procedures should be applied to select \eqn{\lambda}. Must belong to (0,1).}
   \item{lambda}{An optional (not recommended) prespecified vector of candidate tuning parameters. Should be in descending order. }
   \item{penalty}{Either "EN" or "SG" for elastic net or sparse group lasso penalties.}
   \item{alpha}{The tuning parameter \eqn{\alpha}. See documentation.}
