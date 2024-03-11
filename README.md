@@ -16,16 +16,16 @@ Suder, PM, Molstad, AJ. Scalable algorithms for semiparametric accelerated failu
 For conveience, we provide the bibtex entry for this article. 
 ```
 @article{https://doi.org/10.1002/sim.9264,
-author = {Suder, Piotr M. and Molstad, Aaron J.},
-title = {Scalable algorithms for semiparametric accelerated failure time models in high dimensions},
-journal = {Statistics in Medicine},
-volume = {41},
-number = {6},
-pages = {933-949},
-doi = {https://doi.org/10.1002/sim.9264},
-url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.9264},
-eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.9264},
-year = {2022}
+  author = {Suder, Piotr M. and Molstad, Aaron J.},
+  title = {Scalable algorithms for semiparametric accelerated failure time models in high dimensions},
+  journal = {Statistics in Medicine},
+  volume = {41},
+  number = {6},
+  pages = {933-949},
+  doi = {https://doi.org/10.1002/sim.9264},
+  url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.9264},
+  eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/sim.9264},
+  year = {2022}
 }
 ```
 
