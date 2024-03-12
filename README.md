@@ -30,5 +30,7 @@ For conveience, we provide the bibtex entry for this article.
 ```
 
 
-# Usage directionsSee [this document](https://ajmolstad.github.io/docs/penAFT_Example.html) for details on implementation and usage. 
+# Usage directions
+
+See [this document](https://ajmolstad.github.io/docs/penAFT_Example.html) for details on implementation and usage. 
 
