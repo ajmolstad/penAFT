@@ -1,9 +1,9 @@
 \name{penAFT-package}
 \alias{penAFT-package}
 \docType{package}
-\title{Fit and tune the a semiparameteric accelerated failure time model with weight elastic net or weighted sparse group-lasso penalties.}
+\title{Fit and tune the semiparameteric accelerated failure time model by minimizing a rank-based estimation criterion plus weighted elastic net or weighted sparse group-lasso penalty.}
 \description{
-This package contains numerous functions related to the penalized Gehan estimator. In particular, the main functions are for solution path computation, cross-validation, prediction, and coefficient extraction. 
+This package contains numerous functions related t a penalized rank-based estimator of the semiparameteric AFT, the so-called penalized Gehan estimator. In particular, the main functions are for solution path computation, cross-validation, prediction, and coefficient extraction. 
 }
 \details{The primary functions are \code{penAFT} and \code{penAFT.cv}, the latter of which performs cross-validation. In general, both functions fit the penalized Gehan estimator. Given \eqn{(\log(y_1), x_1, \delta_1),\dots,(\log(y_n), x_n, \delta_n)} where \eqn{y_i} is the minimum of the survival time and censoring time, \eqn{x_i} is a \eqn{p}-dimensional predictor, and \eqn{\delta_i} is the indicator of censoring,  \code{penAFT} fits the solution path for the argument minimizing
 \deqn{\frac{1}{n^2}\sum_{i=1}^n \sum_{j=1}^n \delta_i \{ \log(y_i) - \log(y_j) - (x_i - x_j)'\beta \}^{-} + \lambda g(\beta)}

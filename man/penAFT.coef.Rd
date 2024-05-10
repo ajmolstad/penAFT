@@ -18,7 +18,7 @@ penAFT.coef(fit, lambda = NULL)
 
 
 \details{
-  The regression coefficients stored in the fitted model objects coming from \code{penAFT} or \code{penAFT.cv} will (i) be on the scale of standardized predictors if standardization was used (which is the default) and (ii) are stored as a specific sparse matrix so that coefficient extraction is cumbersome. This function returns the regression coefficient estimates on the original scale of the predictors for a particular tuning parmaeter value. It is important to note that this method does not return an estimate of the intercept: the intercept is absored into the error term as the Gehan loss function is invariant to location change. 
+  The regression coefficients stored in the fitted model objects coming from \code{penAFT} or \code{penAFT.cv} will (i) be on the scale of standardized predictors if standardization was used (which is the default) and (ii) are stored as a specific sparse matrix so that coefficient extraction is cumbersome. This function returns the regression coefficient estimates on the original scale of the predictors for a particular tuning parmaeter value. It is important to note that this method does not return an estimate of the intercept: the intercept is absored into the error term as the Gehan loss function is invariant to translation of its inputs logY. 
 }
 
 \examples{
