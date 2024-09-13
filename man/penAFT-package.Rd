@@ -1,7 +1,7 @@
 \name{penAFT-package}
 \alias{penAFT-package}
 \docType{package}
-\title{Fit and tune the semiparameteric accelerated failure time model by minimizing a rank-based estimation criterion plus weighted elastic net or weighted sparse group-lasso penalty.}
+\title{Fit the semiparameteric accelerated failure time model in high dimensions by minimizing a rank-based estimation criterion plus weighted elastic net or weighted sparse group-lasso penalty.}
 \description{
 This package contains numerous functions related t a penalized rank-based estimator of the semiparameteric AFT, the so-called penalized Gehan estimator. In particular, the main functions are for solution path computation, cross-validation, prediction, and coefficient extraction. 
 }
